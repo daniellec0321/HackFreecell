@@ -42,6 +42,10 @@ int main(int argc, char *argv[]) {
 
     char *processName = "freecell.exe";
     DWORD pid = find_pid(processName);
+    if (pid == -1) {
+        printf("Failed to find pid of process named %s\n", processName);
+        return 1;
+    }
 
     // Open process of the running executable
     HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
@@ -51,20 +55,19 @@ int main(int argc, char *argv[]) {
     }
     
     // Read the virtual memory of the process
-    LPVOID addressToRead = (LPVOID)0x01008B58;
+    LPVOID addressToRead = (LPVOID)0x01008B04;
     SIZE_T bytesRead;
-    // BYTE buffer[SIZE]; // Buffer to store the read data
     BYTE buffer[4]; // Buffer to store the read data
     if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4, &bytesRead)) {
         printf("Failed to read from process memory. Error code: %d\n", GetLastError());
         CloseHandle(processHandle);
         return 1;
     }
-    printf("Read memory!\n");
-    printf("%02x\n", buffer[0]);
-    printf("%02x\n", buffer[1]);
-    printf("%02x\n", buffer[2]);
-    printf("%02x\n", buffer[3]);
+    if (buffer[0] == 0xff) {
+        printf("No card data yet. Make sure to begin a game before running the program.\n");
+    } else {
+        printf("Top left card is %02x\n", buffer[0]);
+    }
 
     CloseHandle(processHandle);
 

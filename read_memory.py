@@ -1,4 +1,5 @@
-from ctypes import *
-import os
+import ctypes as ct
 
-lib = CDLL("./liblib.dll")
+freecellLib = ct.CDLL("./lib/hackFreecell.dll")
+
+freecellLib.thing()

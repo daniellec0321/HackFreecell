@@ -5,6 +5,17 @@
 #include <stdio.h>
 #include <string.h>
 
+#define COLUMN1 0x01008B04
+#define COLUMN2 0x01008B58
+#define COLUMN3 0x01008BAC
+#define COLUMN4 0x01008C00
+#define COLUMN5 0x01008C54
+#define COLUMN6 0x01008CA8
+#define COLUMN7 0x01008C5C
+#define COLUMN8 0x01008D50
+#define TABLEAU 0x01008AB0
+#define STACK 0x01008AC0
+
 #define streq(a, b) (strcmp(a, b) == 0)
 
 DWORD find_pid(char *processName) {
@@ -36,6 +47,28 @@ DWORD find_pid(char *processName) {
 
     CloseHandle(snapshot);
     return (DWORD)pid;
+}
+
+int get_tableau(unsigned short* board) {
+
+    char *processName = "freecell.exe";
+    DWORD pid = find_pid(processName);
+    if (pid == -1) {
+        printf("Failed to find pid of process named %s\n", processName);
+        return -1;
+    }
+
+    // Open process of the running executable
+    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (processHandle == NULL) {
+        printf("Failed to open process. Error code: %ld\n", GetLastError());
+        return -1;
+    }
+
+    CloseHandle(processHandle);
+
+    return 0;
+
 }
 
 int thing(void) {
@@ -73,3 +106,15 @@ int thing(void) {
 
     return 0;
 }
+
+// unsigned short* test(void) {
+//     board = malloc(8*sizeof(unsigned short));
+//     for (int i=0; i<8; i++) {
+//         board[i] = 0xff;
+//     }
+//     return board;
+// }
+
+// void clean_board(void) {
+//     if (board) free(board);
+// }

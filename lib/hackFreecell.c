@@ -5,10 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#define COLUMNSIZE 19
+#define NUMCOLUMNS 8
+#define BYTESIZE 4
 #define TABLEAU 0x01008AB0
 #define STACK 0x01008AC0
 LPVOID COLUMNS[8] = {(LPVOID)0x01008B04, (LPVOID)0x01008B58, (LPVOID)0x01008BAC, (LPVOID)0x01008C00, (LPVOID)0x01008C54, (LPVOID)0x01008CA8, (LPVOID)0x01008C5C, (LPVOID)0x01008D50};
-
 #define streq(a, b) (strcmp(a, b) == 0)
 
 DWORD find_pid(char *processName) {
@@ -61,15 +63,15 @@ int get_tableau(unsigned char* board) {
     // Read the tableau
     LPVOID addressToRead = (LPVOID)TABLEAU;
     SIZE_T bytesRead;
-    BYTE buffer[16]; // Buffer to store the read data
-    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {
+    BYTE buffer[4*BYTESIZE]; // Buffer to store the read data
+    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4*BYTESIZE, &bytesRead)) {
         printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
         CloseHandle(processHandle);
         return -1;
     }
 
-    for (int i=0; i<16; i+=4) {
-        board[i/4] = buffer[i];
+    for (int i=0; i<4*BYTESIZE; i+=4) {
+        board[i/BYTESIZE] = buffer[i];
     }
 
     CloseHandle(processHandle);
@@ -97,15 +99,15 @@ int get_stack(unsigned char* board) {
     // Read the tableau
     LPVOID addressToRead = (LPVOID)STACK;
     SIZE_T bytesRead;
-    BYTE buffer[16]; // Buffer to store the read data
-    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {
+    BYTE buffer[4*BYTESIZE]; // Buffer to store the read data
+    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4*BYTESIZE, &bytesRead)) {
         printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
         CloseHandle(processHandle);
         return -1;
     }
 
-    for (int i=0; i<16; i+=4) {
-        board[i/4] = buffer[i];
+    for (int i=0; i<4*BYTESIZE; i+=4) {
+        board[i/BYTESIZE] = buffer[i];
     }
 
     CloseHandle(processHandle);
@@ -114,9 +116,13 @@ int get_stack(unsigned char* board) {
 
 }
 
-int get_columns(unsigned char** board) {
+int get_columns(unsigned char* board) {
 
-    // board is an 8x52 array of unsigned chars
+    // board is an array of 8*19 = 152 unsigned chars
+    // Initializing board to 0xff
+    for (int i=0; i<COLUMNSIZE*NUMCOLUMNS; i++) {
+        board[i] = 0xff;
+    }
 
     char *processName = "freecell.exe";
     DWORD pid = find_pid(processName);
@@ -132,84 +138,22 @@ int get_columns(unsigned char** board) {
         return -1;
     }
 
-    // Read the columns
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<NUMCOLUMNS; i++) {
         LPVOID addressToRead = COLUMNS[i];
         SIZE_T bytesRead;
-        BYTE buffer[4*52]; // Buffer to store the read data
-        if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {
+        BYTE buffer[BYTESIZE*COLUMNSIZE]; // Buffer to store the read data
+        if (!ReadProcessMemory(processHandle, addressToRead, buffer, BYTESIZE*COLUMNSIZE, &bytesRead)) {
             printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
             CloseHandle(processHandle);
             return -1;
         }
-        for (int j=0; j<4*52; j+=4) {
-            board[i][j/4] = buffer[j];
+        for (int j=0; j<BYTESIZE*COLUMNSIZE; j+=4) {
+            board[(COLUMNSIZE*i)+(j/BYTESIZE)] = buffer[j];
         }
     }
 
-    // LPVOID addressToRead = (LPVOID)STACK;
-    // SIZE_T bytesRead;
-    // BYTE buffer[16]; // Buffer to store the read data
-    // if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {
-    //     printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
-    //     CloseHandle(processHandle);
-    //     return -1;
-    // }
-
-    // for (int i=0; i<16; i+=4) {
-    //     board[i/4] = buffer[i];
-    // }
-
     CloseHandle(processHandle);
 
     return 0;
 
 }
-
-int thing(void) {
-
-    char *processName = "freecell.exe";
-    DWORD pid = find_pid(processName);
-    if (pid == -1) {
-        printf("Failed to find pid of process named %s\n", processName);
-        return 1;
-    }
-
-    // Open process of the running executable
-    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
-    if (processHandle == NULL) {
-        printf("Failed to open process. Error code: %ld\n", GetLastError());
-        return 1;
-    }
-    
-    // Read the virtual memory of the process
-    LPVOID addressToRead = (LPVOID)0x01008B04;
-    SIZE_T bytesRead;
-    BYTE buffer[4]; // Buffer to store the read data
-    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4, &bytesRead)) {
-        printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
-        CloseHandle(processHandle);
-        return 1;
-    }
-    if (buffer[0] == 0xff) {
-        printf("No card data yet. Make sure to begin a game before running the program.\n");
-    } else {
-        printf("Top left card is %02x\n", buffer[0]);
-    }
-
-    CloseHandle(processHandle);
-
-    return 0;
-}
-
-// unsigned short* test(void) {
-//     board = malloc(8*sizeof(unsigned short));
-//     for (int i=0; i<8; i++) {
-//         board[i] = 0xff;
-//     }
-//     return board;
-// }
-
-// void clean_board(void) {
-//     if (board) free(board);
-// }

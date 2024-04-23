@@ -5,16 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#define COLUMN1 0x01008B04
-#define COLUMN2 0x01008B58
-#define COLUMN3 0x01008BAC
-#define COLUMN4 0x01008C00
-#define COLUMN5 0x01008C54
-#define COLUMN6 0x01008CA8
-#define COLUMN7 0x01008C5C
-#define COLUMN8 0x01008D50
 #define TABLEAU 0x01008AB0
 #define STACK 0x01008AC0
+LPVOID COLUMNS[8] = {(LPVOID)0x01008B04, (LPVOID)0x01008B58, (LPVOID)0x01008BAC, (LPVOID)0x01008C00, (LPVOID)0x01008C54, (LPVOID)0x01008CA8, (LPVOID)0x01008C5C, (LPVOID)0x01008D50};
 
 #define streq(a, b) (strcmp(a, b) == 0)
 
@@ -114,6 +107,58 @@ int get_stack(unsigned char* board) {
     for (int i=0; i<16; i+=4) {
         board[i/4] = buffer[i];
     }
+
+    CloseHandle(processHandle);
+
+    return 0;
+
+}
+
+int get_columns(unsigned char** board) {
+
+    // board is an 8x52 array of unsigned chars
+
+    char *processName = "freecell.exe";
+    DWORD pid = find_pid(processName);
+    if (pid == -1) {
+        printf("Failed to find pid of process named %s\n", processName);
+        return -1;
+    }
+
+    // Open process of the running executable
+    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (processHandle == NULL) {
+        printf("Failed to open process. Error code: %ld\n", GetLastError());
+        return -1;
+    }
+
+    // Read the columns
+    for (int i=0; i<8; i++) {
+        LPVOID addressToRead = COLUMNS[i];
+        SIZE_T bytesRead;
+        BYTE buffer[4*52]; // Buffer to store the read data
+        if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {
+            printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
+            CloseHandle(processHandle);
+            return -1;
+        }
+        for (int j=0; j<4*52; j+=4) {
+            board[i][j/4] = buffer[j];
+        }
+    }
+
+    // LPVOID addressToRead = (LPVOID)STACK;
+    // SIZE_T bytesRead;
+    // BYTE buffer[16]; // Buffer to store the read data
+    // if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {
+    //     printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
+    //     CloseHandle(processHandle);
+    //     return -1;
+    // }
+
+    // for (int i=0; i<16; i+=4) {
+    //     board[i/4] = buffer[i];
+    // }
 
     CloseHandle(processHandle);
 

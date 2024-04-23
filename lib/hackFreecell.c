@@ -49,7 +49,7 @@ DWORD find_pid(char *processName) {
     return (DWORD)pid;
 }
 
-int get_tableau(unsigned short* board) {
+int get_tableau(unsigned char* board) {
 
     char *processName = "freecell.exe";
     DWORD pid = find_pid(processName);
@@ -67,6 +67,42 @@ int get_tableau(unsigned short* board) {
 
     // Read the tableau
     LPVOID addressToRead = (LPVOID)TABLEAU;
+    SIZE_T bytesRead;
+    BYTE buffer[16]; // Buffer to store the read data
+    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {
+        printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
+        CloseHandle(processHandle);
+        return -1;
+    }
+
+    for (int i=0; i<16; i+=4) {
+        board[i/4] = buffer[i];
+    }
+
+    CloseHandle(processHandle);
+
+    return 0;
+
+}
+
+int get_stack(unsigned char* board) {
+
+    char *processName = "freecell.exe";
+    DWORD pid = find_pid(processName);
+    if (pid == -1) {
+        printf("Failed to find pid of process named %s\n", processName);
+        return -1;
+    }
+
+    // Open process of the running executable
+    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (processHandle == NULL) {
+        printf("Failed to open process. Error code: %ld\n", GetLastError());
+        return -1;
+    }
+
+    // Read the tableau
+    LPVOID addressToRead = (LPVOID)STACK;
     SIZE_T bytesRead;
     BYTE buffer[16]; // Buffer to store the read data
     if (!ReadProcessMemory(processHandle, addressToRead, buffer, 16, &bytesRead)) {

@@ -24,3 +24,12 @@ print(f'The board is', end='')
 for i in range(4):
     print(f' {hex(board[i])}', end='')
 print('')
+
+### Getting the columns
+board = ((ct.c_ubyte * 52)() * 8)() # This is the array that you will send to the get_stack function
+result = hf.get_stack(board) # Get the stack
+if (result == -1):
+    print("Error getting the stack")
+    sys.exit(1)
+print(f'The board is', end='')
+print(board)

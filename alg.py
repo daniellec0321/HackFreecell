@@ -83,6 +83,22 @@ def generate_moves(board, free_cells, foundations):
                     (foundation and int(foundation[-1], 16)%4 == int(card,16)%4 and int(card, 16) == int(foundation[-1], 16) + 4):
                 moves.append(("F{}".format(free_col_index), "P{}".format(f_index)))
 
+    # Move within columns
+    for src_col_index, src_col in enumerate(board):
+        if src_col:  # Check if column is not empty
+            for dest_col_index, dest_col in enumerate(board):
+                if src_col_index != dest_col_index:
+                    if not dest_col or (((int(dest_col[-1],16)%4 == 0 and int(src_col[-1],16)%4 == 1) or \
+                                        (int(dest_col[-1],16)%4 == 0 and int(src_col[-1],16)%4 == 2) or \
+                                        (int(dest_col[-1],16)%4 == 1 and int(src_col[-1],16)%4 == 0) or \
+                                        (int(dest_col[-1],16)%4 == 1 and int(src_col[-1],16)%4 == 3) or \
+                                        (int(dest_col[-1],16)%4 == 2 and int(src_col[-1],16)%4 == 0) or \
+                                        (int(dest_col[-1],16)%4 == 2 and int(src_col[-1],16)%4 == 0) or \
+                                        (int(dest_col[-1],16)%4 == 3 and int(src_col[-1],16)%4 == 1) or \
+                                        (int(dest_col[-1],16)%4 == 3 and int(src_col[-1],16)%4 == 2)) and \
+                                        (int(dest_col[-1], 16)//4 - 1 ==  int(src_col[-1],16)//4)):
+                        moves.append(("C{}".format(src_col_index), "C{}".format(dest_col_index)))
+
     # Move from columns to free cells
     for col_index, col in enumerate(board):
         if col:
@@ -104,26 +120,10 @@ def generate_moves(board, free_cells, foundations):
                                         (int(dest_col[-1],16)%4 == 2 and int(free_col[-1],16)%4 == 0) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(free_col[-1],16)%4 == 1) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(free_col[-1],16)%4 == 2)) and \
-                                        (int(dest_col[-1], 16)/4 - 1 == int(free_col[-1], 16)/4)):      # check that its one number lower
+                                        (int(dest_col[-1], 16)//4 - 1 == int(free_col[-1], 16)//4)):      # check that its one number lower
                         moves.append(("F{}".format(free_col_index), "C{}".format(dest_col_index)))
 
         
-
-    # Move within columns
-    for src_col_index, src_col in enumerate(board):
-        if src_col:  # Check if column is not empty
-            for dest_col_index, dest_col in enumerate(board):
-                if src_col_index != dest_col_index:
-                    if not dest_col or (((int(dest_col[-1],16)%4 == 0 and int(src_col[-1],16)%4 == 1) or \
-                                        (int(dest_col[-1],16)%4 == 0 and int(src_col[-1],16)%4 == 2) or \
-                                        (int(dest_col[-1],16)%4 == 1 and int(src_col[-1],16)%4 == 0) or \
-                                        (int(dest_col[-1],16)%4 == 1 and int(src_col[-1],16)%4 == 3) or \
-                                        (int(dest_col[-1],16)%4 == 2 and int(src_col[-1],16)%4 == 0) or \
-                                        (int(dest_col[-1],16)%4 == 2 and int(src_col[-1],16)%4 == 0) or \
-                                        (int(dest_col[-1],16)%4 == 3 and int(src_col[-1],16)%4 == 1) or \
-                                        (int(dest_col[-1],16)%4 == 3 and int(src_col[-1],16)%4 == 2)) and \
-                                        (int(dest_col[-1], 16)/4 -1 ==  int(src_col[-1], 16)/4)):
-                        moves.append(("C{}".format(src_col_index), "C{}".format(dest_col_index)))
 
     return moves
 

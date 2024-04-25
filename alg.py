@@ -3,7 +3,7 @@
 
 import sys
 import heapq
-import skeleton 
+from readProgram import readProgram 
 
 ACES = ["00", "01", "02", "03"]
 
@@ -226,6 +226,8 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
 
 
 def main():
+
+    rp = readProgram()
 
     # freecells = ['FF', 'FF', 'FF', 'FF']
     # foundations = [[], ['01'], [], []]

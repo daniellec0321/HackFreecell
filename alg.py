@@ -12,6 +12,7 @@ def make_move(board, free_cells, move, foundations):
     # Making changes on copies
     board = [col.copy() for col in board]
     free_cells = free_cells.copy()
+    # foundations = [foundation.copy() for foundation in foundations]
 
     # Moving from column to free cell
     if dest[0] == "F" and src[0] == "C":
@@ -57,11 +58,32 @@ def generate_moves(board, free_cells, foundations):
     
     moves = []
 
+    # Move from columns to foundations
+    for col_index, col in enumerate(board):
+        if col:  # Check if column is not empty
+            card = col[-1]
+            for f_index, foundation in enumerate(foundations):
+                if (not foundation and card in ACES) or \
+                        (foundation and int(foundation[-1], 16)%4 == int(card,16)%4 and int(card, 16) == int(foundation[-1], 16) + 4):
+                    moves.append(("C{}".format(col_index), "P{}".format(f_index)))
+
+
+    # Move from freecells to foundations
+    for free_col_index, card in enumerate(free_cells):
+        if card == "FF":
+            continue
+        for f_index, foundation in enumerate(foundations):
+            if (not foundation and card in ACES) or \
+                    (foundation and int(foundation[-1], 16)%4 == int(card,16)%4 and int(card, 16) == int(foundation[-1], 16) + 4):
+                moves.append(("F{}".format(free_col_index), "P{}".format(f_index)))
+
     # Move from columns to free cells
     for col_index, col in enumerate(board):
-        for free_index, free_cell in enumerate(free_cells):
-            if free_cell == "FF":  # Empty free cell
-                moves.append(("C{}".format(col_index), "F{}".format(free_index)))
+        if col:
+            for free_index, free_cell in enumerate(free_cells):
+                if free_cell == "FF":  # Empty free cell
+                    moves.append(("C{}".format(col_index), "F{}".format(free_index)))
+                    break
 
     # Move from free cells to columns
     for free_col_index, free_col in enumerate(free_cells):
@@ -76,27 +98,10 @@ def generate_moves(board, free_cells, foundations):
                                         (int(dest_col[-1],16)%4 == 2 and int(free_col[-1],16)%4 == 0) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(free_col[-1],16)%4 == 1) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(free_col[-1],16)%4 == 2)) and \
-                                        int(dest_col[-1], 16) == int(free_col[-1], 16) - 4):
+                                        (int(dest_col[-1], 16)/4 - 1 == int(free_col[-1], 16)/4)):
                         moves.append(("F{}".format(free_col_index), "C{}".format(dest_col_index)))
 
-    # Move from freecells to foundations
-    for free_col_index, card in enumerate(free_cells):
-        if card == "FF":
-            continue
-        for f_index, foundation in enumerate(foundations):
-            if (not foundation and card in ACES) or \
-                    (foundation and int(foundation[-1], 16)%4 == int(card,16)%4 and int(card[0], 16) == int(foundation[-1], 16) + 4):
-                moves.append(("F{}".format(free_col_index), "P{}".format(f_index)))
         
-        
-    # Move from columns to foundations
-    for col_index, col in enumerate(board):
-        if col:  # Check if column is not empty
-            card = col[-1]
-            for f_index, foundation in enumerate(foundations):
-                if (not foundation and card in ACES) or \
-                        (foundation and int(foundation[-1], 16)%4 == int(card,16)%4 and int(card[0], 16) == int(foundation[-1], 16) + 4):
-                    moves.append(("C{}".format(col_index), "P{}".format(f_index)))
 
     # Move within columns
     for src_col_index, src_col in enumerate(board):
@@ -111,13 +116,13 @@ def generate_moves(board, free_cells, foundations):
                                         (int(dest_col[-1],16)%4 == 2 and int(src_col[-1],16)%4 == 0) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(src_col[-1],16)%4 == 1) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(src_col[-1],16)%4 == 2)) and \
-                                        int(dest_col[-1], 16) == int(src_col[-1], 16) - 4):
+                                        (int(dest_col[-1], 16)/4 -1 ==  int(src_col[-1], 16)/4)):
                         moves.append(("C{}".format(src_col_index), "C{}".format(dest_col_index)))
 
     return moves
 
 
-def solve_freecell(board, free_cells, foundations, visited_states=None, moves=None):
+def solve_freecell(board, free_cells, foundations, visited_states=None, moves=None, depth=0):
     
     # Initialize visited_states and moves if not provided. Visited States just stores a bunch of past boards
     if visited_states is None:
@@ -130,34 +135,64 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
     board_state = tuple(tuple(col) for col in board)
 
     # Base Case: If all columns are empty, the game is solved
-    if all(not col for col in board):
+    if all(not col for col in board) and all(free == "FF" for free in free_cells):
         return True, board, moves
 
     # Check if we've already visited this state
     if board_state in visited_states:
+        # print("Return 2")
         return False, None, None
 
     visited_states.add(board_state)
-
     # Recursive Step: Generate all possible moves. Possible_moves is frontier
     possible_moves = generate_moves(board, free_cells, foundations)
-
+    # print(board_state)
+    # print(possible_moves)
+    # print()
     if not possible_moves:
+        # print("Return 3")
         return False, None, None
 
     for move in possible_moves:
-        new_board, new_free_cells = make_move(board.copy(), free_cells.copy(), move, foundations.copy())
 
+        for col in board:
+            print(f"{'    ' * depth}{col}")
+        print(f"{'    ' * depth}Current Free Cells: {free_cells}")
+        
+        print(f"{'    ' * depth}Current Foundations Cells: {foundations}")
+
+        print(f"{'    ' * depth}Trying Move: {move}")
+        new_board, new_free_cells = make_move(board.copy(), free_cells.copy(), move, foundations.copy())
+        
+        print(f"{'    ' * depth}New Board State:")
+        for col in new_board:
+            print(f"{'    ' * depth}{col}")
+        print(f"{'    ' * depth}New Free Cells: {new_free_cells}")
+
+        print(f"{'    ' * depth}Foundations Cells: {foundations}")
+        
+        print()
+    
         # Recurse and explore this move
         solved, result_board, move_list = solve_freecell(new_board, new_free_cells, foundations, visited_states, moves + [move])
 
         if solved:
+            # print("Return 4")
             return True, result_board, move_list
-
+    # print("Return 5")
     return False, None, None
 
 
 def main():
+    
+    initial_board = [
+        ["00"],
+        ["03", "06", "0B"],
+        ["02", "07"],
+        ["01", "04","0A"], [],[],[],[]]
+    print(initial_board)
+    
+    ''' 
     initial_board = [
         ["17", "1B", "1A", "25", "00", "05", "0B"],
         ["1F", "08", "01", "02", "2C", "2E", "09"],
@@ -168,6 +203,7 @@ def main():
         ["00", "19", "11", "2F", "06", "2B"],
         ["21", "2A", "28", "30", "33", "23"]
     ]
+    '''
     '''
     initial_board = [
         ["17", "1B", "1A", "25", "00", "05", "0B", "FF", "FF", "FF", "FF", "FF", "FF"],

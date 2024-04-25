@@ -1,5 +1,3 @@
-// Currently, this code looks for a running freecell game and prints the bytes that correspond to the top-left card.
-
 #include <windows.h>
 #include <tlhelp32.h>
 #include <stdio.h>
@@ -8,9 +6,9 @@
 #define COLUMNSIZE 19
 #define NUMCOLUMNS 8
 #define BYTESIZE 4
-#define TABLEAU 0x01008AB0
-#define STACK 0x01008AC0
-LPVOID COLUMNS[8] = {(LPVOID)0x01008B04, (LPVOID)0x01008B58, (LPVOID)0x01008BAC, (LPVOID)0x01008C00, (LPVOID)0x01008C54, (LPVOID)0x01008CA8, (LPVOID)0x01008C5C, (LPVOID)0x01008D50};
+#define FREECELLS 0x01008AB0
+#define FOUNDATIONS 0x01008AC0
+LPVOID TABLEAU[8] = {(LPVOID)0x01008B04, (LPVOID)0x01008B58, (LPVOID)0x01008BAC, (LPVOID)0x01008C00, (LPVOID)0x01008C54, (LPVOID)0x01008CA8, (LPVOID)0x01008C5C, (LPVOID)0x01008D50};
 #define streq(a, b) (strcmp(a, b) == 0)
 
 DWORD find_pid(char *processName) {
@@ -44,79 +42,79 @@ DWORD find_pid(char *processName) {
     return (DWORD)pid;
 }
 
+int get_freecells(unsigned char* board) {
+
+    char *processName = "freecell.exe";
+    DWORD pid = find_pid(processName);
+    if (pid == -1) {
+        printf("Failed to find pid of process named %s\n", processName);
+        return -1;
+    }
+
+    // Open process of the running executable
+    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (processHandle == NULL) {
+        printf("Failed to open process. Error code: %ld\n", GetLastError());
+        return -1;
+    }
+
+    // Read the tableau
+    LPVOID addressToRead = (LPVOID)FREECELLS;
+    SIZE_T bytesRead;
+    BYTE buffer[4*BYTESIZE]; // Buffer to store the read data
+    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4*BYTESIZE, &bytesRead)) {
+        printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
+        CloseHandle(processHandle);
+        return -1;
+    }
+
+    for (int i=0; i<4*BYTESIZE; i+=4) {
+        board[i/BYTESIZE] = buffer[i];
+    }
+
+    CloseHandle(processHandle);
+
+    return 0;
+
+}
+
+int get_foundations(unsigned char* board) {
+
+    char *processName = "freecell.exe";
+    DWORD pid = find_pid(processName);
+    if (pid == -1) {
+        printf("Failed to find pid of process named %s\n", processName);
+        return -1;
+    }
+
+    // Open process of the running executable
+    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (processHandle == NULL) {
+        printf("Failed to open process. Error code: %ld\n", GetLastError());
+        return -1;
+    }
+
+    // Read the tableau
+    LPVOID addressToRead = (LPVOID)FOUNDATIONS;
+    SIZE_T bytesRead;
+    BYTE buffer[4*BYTESIZE]; // Buffer to store the read data
+    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4*BYTESIZE, &bytesRead)) {
+        printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
+        CloseHandle(processHandle);
+        return -1;
+    }
+
+    for (int i=0; i<4*BYTESIZE; i+=4) {
+        board[i/BYTESIZE] = buffer[i];
+    }
+
+    CloseHandle(processHandle);
+
+    return 0;
+
+}
+
 int get_tableau(unsigned char* board) {
-
-    char *processName = "freecell.exe";
-    DWORD pid = find_pid(processName);
-    if (pid == -1) {
-        printf("Failed to find pid of process named %s\n", processName);
-        return -1;
-    }
-
-    // Open process of the running executable
-    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
-    if (processHandle == NULL) {
-        printf("Failed to open process. Error code: %ld\n", GetLastError());
-        return -1;
-    }
-
-    // Read the tableau
-    LPVOID addressToRead = (LPVOID)TABLEAU;
-    SIZE_T bytesRead;
-    BYTE buffer[4*BYTESIZE]; // Buffer to store the read data
-    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4*BYTESIZE, &bytesRead)) {
-        printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
-        CloseHandle(processHandle);
-        return -1;
-    }
-
-    for (int i=0; i<4*BYTESIZE; i+=4) {
-        board[i/BYTESIZE] = buffer[i];
-    }
-
-    CloseHandle(processHandle);
-
-    return 0;
-
-}
-
-int get_stack(unsigned char* board) {
-
-    char *processName = "freecell.exe";
-    DWORD pid = find_pid(processName);
-    if (pid == -1) {
-        printf("Failed to find pid of process named %s\n", processName);
-        return -1;
-    }
-
-    // Open process of the running executable
-    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
-    if (processHandle == NULL) {
-        printf("Failed to open process. Error code: %ld\n", GetLastError());
-        return -1;
-    }
-
-    // Read the tableau
-    LPVOID addressToRead = (LPVOID)STACK;
-    SIZE_T bytesRead;
-    BYTE buffer[4*BYTESIZE]; // Buffer to store the read data
-    if (!ReadProcessMemory(processHandle, addressToRead, buffer, 4*BYTESIZE, &bytesRead)) {
-        printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
-        CloseHandle(processHandle);
-        return -1;
-    }
-
-    for (int i=0; i<4*BYTESIZE; i+=4) {
-        board[i/BYTESIZE] = buffer[i];
-    }
-
-    CloseHandle(processHandle);
-
-    return 0;
-
-}
-
-int get_columns(unsigned char* board) {
 
     // board is an array of 8*19 = 152 unsigned chars
     // Initializing board to 0xff
@@ -139,7 +137,7 @@ int get_columns(unsigned char* board) {
     }
 
     for (int i=0; i<NUMCOLUMNS; i++) {
-        LPVOID addressToRead = COLUMNS[i];
+        LPVOID addressToRead = TABLEAU[i];
         SIZE_T bytesRead;
         BYTE buffer[BYTESIZE*COLUMNSIZE]; // Buffer to store the read data
         if (!ReadProcessMemory(processHandle, addressToRead, buffer, BYTESIZE*COLUMNSIZE, &bytesRead)) {

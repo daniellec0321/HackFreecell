@@ -9,6 +9,12 @@ sys.setrecursionlimit(10000)
 
 ACES = ["00", "01", "02", "03"]
 
+def print_game_state(board: list[list[str]], free_cells: list[str], foundations: list[list[str]]):
+    print(f'Foundations: {[c[-1] for c in foundations if c]}')
+    print(f'Freecells: {free_cells}')
+    for c in board:
+        print(c)
+
 def find_score(board: list[list[str]], free_cells: list[str], foundations: list[list[str]]) -> int:
     # -1 for every card in the freecells, +2 for every card in the foundation
     score = 0
@@ -165,7 +171,22 @@ def generate_moves(board, free_cells, foundations):
     return moves
 
 
-def solve_freecell(board, free_cells, foundations, visited_states=None, moves=None, depth=0):
+def solve_freecell(board, free_cells, foundations, visited_states=None, moves=None, depth=0, score_to_compare=0):
+
+    # If depth is 5 or more, compare to score to compare
+    new_depth = depth
+    new_score = score_to_compare
+    if depth >= 50:
+        return False, None, None
+    if depth % 5 == 0:
+    # if depth >= 3:
+        score = find_score(board, free_cells, foundations)
+        if (score < score_to_compare):
+            # print(f'Stopping searching')
+            return False, None, None
+        new_depth = 0
+        new_score = score
+    # print_game_state(board, free_cells, foundations)
     
     # Initialize visited_states and moves if not provided. Visited States just stores a bunch of past boards
     if visited_states is None:
@@ -196,7 +217,7 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
         # print("Return 3")
         return False, None, None
 
-    for temp in possible_moves:
+    for idx, temp in enumerate(possible_moves):
         move = temp[1]
 
         # for col in board:
@@ -205,7 +226,7 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
         
         # print(f"{'    ' * depth}Current Foundations Cells: {foundations}")
 
-        print(f"{'    ' * depth}Trying Move: {move}")
+        # print(f"{'    ' * depth}Trying Move: {move}")
         new_board, new_free_cells, new_foundations = make_move(board.copy(), free_cells.copy(), move, foundations.copy())
         
         # print(f"{'    ' * depth}New Board State:")
@@ -218,7 +239,8 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
         # print()
     
         # Recurse and explore this move
-        solved, result_board, move_list = solve_freecell(new_board, new_free_cells, new_foundations, visited_states, moves + [move])
+        # solved, result_board, move_list = solve_freecell(new_board, new_free_cells, new_foundations, visited_states, moves + [move])
+        solved, result_board, move_list = solve_freecell(new_board, new_free_cells, new_foundations, visited_states, moves + [move], new_depth+1, new_score)
 
         if solved:
             # print("Return 4")
@@ -288,17 +310,42 @@ def main():
         ["21", "2A", "28", "30", "33", "23", "FF", "FF", "FF", "FF", "FF", "FF", "FF"]
     ]
     '''
-    initial_free_cells = ["FF", "FF", "FF", "FF"]
+
+    # initial_board = [
+    #     ["06", "05", "04", "03", "02", "01", "00"],
+    #     ["0D", "0C", "0B", "0A", "09", "08", "07"],
+    #     ["14", "13", "12", "11", "10", "0F", "0E"],
+    #     ["1B", "1A", "19", "18", "17", "16", "15"],
+    #     ["21", "20", "1F", "1E", "1D", "1C"],
+    #     ["27", "26", "25", "24", "23", "22"],
+    #     ["2D", "2C", "2B", "2A", "29", "28"],
+    #     ["33", "32", "31", "30", "2F", "2E"]
+    # ]
+
+    initial_board = rp.get_tableau()
+    initial_free_cells = rp.get_freecells()
+    initial_foundations = rp.get_foundations()
+
+    # initial_free_cells = ["FF", "FF", "FF", "FF"]
     
     # initial_foundations = [[],[],[],[]]
-    initial_foundations = [
-        ["00", "04", "08", "0C", "10", "14", "18", "1C", "20", "24", "28", "2C", "30"],
-        ["01", "05", "09", "0D", "11", "15", "19", "1D", "21", "25", "29", "2D"],
-        ["02", "06", "0A", "0E", "12", "16", "1A", "1E", "22", "26", "2A", "2E"],
-        ["03", "07", "0B", "0F", "13", "17", "1B", "1F", "23", "27", "2B", "2F"]
-    ]
+    # initial_foundations = [
+    #     ["00", "04", "08", "0C", "10", "14", "18", "1C", "20", "24", "28", "2C", "30"],
+    #     ["01", "05", "09", "0D", "11", "15", "19", "1D", "21", "25", "29", "2D"],
+    #     ["02", "06", "0A", "0E", "12", "16", "1A", "1E", "22", "26", "2A", "2E"],
+    #     ["03", "07", "0B", "0F", "13", "17", "1B", "1F", "23", "27", "2B", "2F"]
+    # ]
 
-    solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations)
+    initial_board = rp.get_tableau()
+    initial_free_cells = rp.get_freecells()
+    initial_foundations = rp.get_foundations()
+    if not initial_board or not initial_free_cells or not initial_foundations:
+        print(f'Error getting game data')
+        return 1
+
+    initial_score = find_score(initial_board, initial_free_cells, initial_foundations)
+    # solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, 0, initial_score)
+    solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, None, None, 0, initial_score)
 
     if solved:
         print("Solution found! Moves:")

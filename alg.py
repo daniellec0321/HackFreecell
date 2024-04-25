@@ -12,7 +12,7 @@ def make_move(board, free_cells, move, foundations):
     # Making changes on copies
     board = [col.copy() for col in board]
     free_cells = free_cells.copy()
-    # foundations = [foundation.copy() for foundation in foundations]
+    foundations = [foundation.copy() for foundation in foundations]
 
     # Moving from column to free cell
     if dest[0] == "F" and src[0] == "C":
@@ -51,12 +51,18 @@ def make_move(board, free_cells, move, foundations):
         if board[src]:
             board[dest_col].append(board[src].pop())
 
-    return board, free_cells
+    return board, free_cells, foundations
 
 
 def generate_moves(board, free_cells, foundations):
     
     moves = []
+
+    # Move that move from/to a column preceed with C
+    # Moves that move from/to a free cell preceed with F
+    # Moves that move from/to a foundation pile preceed with P
+
+
 
     # Move from columns to foundations
     for col_index, col in enumerate(board):
@@ -89,7 +95,7 @@ def generate_moves(board, free_cells, foundations):
     for free_col_index, free_col in enumerate(free_cells):
             if free_col == "FF":
                 continue
-            for dest_col_index, dest_col in enumerate(board):
+            for dest_col_index, dest_col in enumerate(board):                                           # below if statements check they are alternating black and red for suits
                 if not dest_col or (((int(dest_col[-1],16)%4 == 0 and int(free_col[-1],16)%4 == 1) or \
                                         (int(dest_col[-1],16)%4 == 0 and int(free_col[-1],16)%4 == 2) or \
                                         (int(dest_col[-1],16)%4 == 1 and int(free_col[-1],16)%4 == 0) or \
@@ -98,7 +104,7 @@ def generate_moves(board, free_cells, foundations):
                                         (int(dest_col[-1],16)%4 == 2 and int(free_col[-1],16)%4 == 0) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(free_col[-1],16)%4 == 1) or \
                                         (int(dest_col[-1],16)%4 == 3 and int(free_col[-1],16)%4 == 2)) and \
-                                        (int(dest_col[-1], 16)/4 - 1 == int(free_col[-1], 16)/4)):
+                                        (int(dest_col[-1], 16)/4 - 1 == int(free_col[-1], 16)/4)):      # check that its one number lower
                         moves.append(("F{}".format(free_col_index), "C{}".format(dest_col_index)))
 
         
@@ -162,19 +168,19 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
         print(f"{'    ' * depth}Current Foundations Cells: {foundations}")
 
         print(f"{'    ' * depth}Trying Move: {move}")
-        new_board, new_free_cells = make_move(board.copy(), free_cells.copy(), move, foundations.copy())
+        new_board, new_free_cells, new_foundations = make_move(board.copy(), free_cells.copy(), move, foundations.copy())
         
         print(f"{'    ' * depth}New Board State:")
         for col in new_board:
             print(f"{'    ' * depth}{col}")
         print(f"{'    ' * depth}New Free Cells: {new_free_cells}")
 
-        print(f"{'    ' * depth}Foundations Cells: {foundations}")
+        print(f"{'    ' * depth}New Foundations Cells: {new_foundations}")
         
         print()
     
         # Recurse and explore this move
-        solved, result_board, move_list = solve_freecell(new_board, new_free_cells, foundations, visited_states, moves + [move])
+        solved, result_board, move_list = solve_freecell(new_board, new_free_cells, new_foundations, visited_states, moves + [move])
 
         if solved:
             # print("Return 4")
@@ -184,15 +190,15 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
 
 
 def main():
-    
+    ''' 
     initial_board = [
         ["00"],
         ["03", "06", "0B"],
         ["02", "07"],
         ["01", "04","0A"], [],[],[],[]]
     print(initial_board)
-    
-    ''' 
+    '''
+     
     initial_board = [
         ["17", "1B", "1A", "25", "00", "05", "0B"],
         ["1F", "08", "01", "02", "2C", "2E", "09"],
@@ -203,7 +209,7 @@ def main():
         ["00", "19", "11", "2F", "06", "2B"],
         ["21", "2A", "28", "30", "33", "23"]
     ]
-    '''
+    
     '''
     initial_board = [
         ["17", "1B", "1A", "25", "00", "05", "0B", "FF", "FF", "FF", "FF", "FF", "FF"],

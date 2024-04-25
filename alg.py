@@ -234,3 +234,65 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+'''
+Hex values of cards
+FF: No card
+00: Ace of clubs
+01: Ace of diamonds
+02: Ace of hearts
+03: Ace of spades
+04: 2 of clubs
+05: 2 of diamonds
+06: 2 of hearts
+07: 2 of spades
+08: 3 of clubs
+09: 3 of diamonds
+0A: 3 of hearts
+0B: 3 of spades
+0C: 4 of clubs
+0D: 4 of diamonds
+0E: 4 of hearts
+0F: 4 of spades
+10: 5 of clubs
+11: 5 of diamonds
+12: 5 of hearts
+13: 5 of spades
+14: 6 of clubs
+15: 6 of diamonds
+16: 6 of hearts
+17: 6 of spades
+18: 7 of clubs
+19: 7 of diamonds
+1A: 7 of hearts
+1B: 7 of spades
+1C: 8 of clubs
+1D: 8 of diamonds
+1E: 8 of hearts
+1F: 8 of spades
+20: 9 of clubs
+21: 9 of diamonds
+22: 9 of hearts
+23: 9 of spades
+24: 10 of clubs
+25: 10 of diamonds
+26: 10 of hearts
+27: 10 of spades
+28: Jack of clubs
+29: Jack of diamonds
+2A: Jack of hearts
+2B: Jack of spades
+2C: Queen of clubs
+2D: Queen of diamonds
+2E: Queen of hearts
+2F: Queen of spades
+30: King of clubs
+31: King of diamonds
+32: King of hearts
+33: King of spades
+
+'''

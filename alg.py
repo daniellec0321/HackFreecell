@@ -4,6 +4,7 @@
 import sys
 import heapq
 from readProgram import readProgram
+from typing import Optional
 
 numCalls = 0
 
@@ -171,7 +172,7 @@ def generate_moves(board, free_cells, foundations):
     return moves
 
 
-def solve_freecell(board, free_cells, foundations, visited_states=None, moves=None, depth=0):
+def solve_freecell(board: list[list[str]], free_cells: list[str], foundations: list[list[str]], visited_states: Optional[set], moves=Optional[list[tuple]], depth: int=0) -> list[bool, Optional[list[list[str]]], Optional[list[str]], Optional[list[list[str]]], Optional[set], Optional[list[tuple]]]:
 
     global numCalls
     numCalls += 1
@@ -266,7 +267,7 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
         status = True
     return status, best_board, best_freecells, best_foundations, best_visited, best_moves
 
-def helper(board, free_cells, foundations, visited_states=None, moves=None):
+def helper(board: list[list[str]], free_cells: list[str], foundations: list[list[str]], visited_states: Optional[set], moves: Optional[list[tuple]]) -> list[bool, Optional[list[list[str]]], Optional[list[str]], Optional[list[list[str]]], Optional[set], Optional[list[tuple]]]:
 
     temp_board = board.copy()
     temp_cells = free_cells.copy()
@@ -284,6 +285,8 @@ def helper(board, free_cells, foundations, visited_states=None, moves=None):
         if temp_board:
             if all(not col for col in temp_board) and all(free == "FF" for free in temp_cells):
                 return True, temp_board, temp_cells, temp_foundations, temp_visited, temp_moves
+        else:
+            return False, None, None, None, None, None
 
 
 

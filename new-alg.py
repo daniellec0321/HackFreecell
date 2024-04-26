@@ -199,12 +199,13 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
     best_board = None
     best_freecells = None
     best_foundations = None
-    # best_moves = None
+    best_moves = None
     best_visited = None
-    move_to_add = None
     for _, move in possible_moves:
         temp_board, temp_cells, temp_foundations = make_move(board, cells, foundations, move)
-        status, new_board, new_cells, new_foundations, new_visited, new_moves = solve_freecell(temp_board, temp_cells, temp_foundations, visited, moves, depth+1)
+        temp_moves = moves.copy()
+        temp_moves.append(move)
+        status, new_board, new_cells, new_foundations, new_visited, new_moves = solve_freecell(temp_board, temp_cells, temp_foundations, visited, temp_moves, depth+1)
         if status:
             return [status, new_board, new_cells, new_foundations, new_visited, new_moves]
         if not new_board:
@@ -217,8 +218,7 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
             best_freecells = new_cells.copy()
             best_foundations = [col.copy() for col in new_foundations]
             best_visited = new_visited.copy()
-            # best_moves = new_moves.copy()
-            # move_to_add = move
+            best_moves = new_moves.copy()
     
     if best_board:
         return [False, best_board, best_freecells, best_foundations, best_visited, best_moves]
@@ -236,7 +236,10 @@ def helper(board: list[list[str]], cells: list[str], foundations: list[list[str]
     if moves:
         temp_moves = moves.copy()
     sol_found = False
+    it = 0
     while not sol_found:
+        it += 1
+        print(f'Iteration {it}')
         sol_found, temp_board, temp_cells, temp_foundations, temp_visited, temp_moves = solve_freecell(temp_board, temp_cells, temp_foundations, temp_visited, temp_moves)
         if sol_found:
             return temp_moves
@@ -283,9 +286,9 @@ def main():
     #     ["00", "19", "11", "2F", "06", "2B"],
     #     ["21", "2A", "28", "30", "33", "23"]
     # ]
-    initial_board = [
-        ["33"], ["32"], ["31"], [], [], [], [], []
-    ]
+    # initial_board = [
+    #     ["33"], ["32"], ["31"], [], [], [], [], []
+    # ]
     
     '''
     initial_board = [
@@ -300,26 +303,26 @@ def main():
     ]
     '''
 
-    # initial_board = [
-    #     ["06", "05", "04", "03", "02", "01", "00"],
-    #     ["0D", "0C", "0B", "0A", "09", "08", "07"],
-    #     ["14", "13", "12", "11", "10", "0F", "0E"],
-    #     ["1B", "1A", "19", "18", "17", "16", "15"],
-    #     ["21", "20", "1F", "1E", "1D", "1C"],
-    #     ["27", "26", "25", "24", "23", "22"],
-    #     ["2D", "2C", "2B", "2A", "29", "28"],
-    #     ["33", "32", "31", "30", "2F", "2E"]
-    # ]
+    initial_board = [
+        ["06", "05", "04", "03", "02", "01", "00"],
+        ["0D", "0C", "0B", "0A", "09", "08", "07"],
+        ["14", "13", "12", "11", "10", "0F", "0E"],
+        ["1B", "1A", "19", "18", "17", "16", "15"],
+        ["21", "20", "1F", "1E", "1D", "1C"],
+        ["27", "26", "25", "24", "23", "22"],
+        ["2D", "2C", "2B", "2A", "29", "28"],
+        ["33", "32", "31", "30", "2F", "2E"]
+    ]
 
     initial_free_cells = ["FF", "FF", "FF", "FF"]
     
-    # initial_foundations = [[],[],[],[]]
-    initial_foundations = [
-        ["00", "04", "08", "0C", "10", "14", "18", "1C", "20", "24", "28", "2C", "30"],
-        ["01", "05", "09", "0D", "11", "15", "19", "1D", "21", "25", "29", "2D"],
-        ["02", "06", "0A", "0E", "12", "16", "1A", "1E", "22", "26", "2A", "2E"],
-        ["03", "07", "0B", "0F", "13", "17", "1B", "1F", "23", "27", "2B", "2F"]
-    ]
+    initial_foundations = [[],[],[],[]]
+    # initial_foundations = [
+    #     ["00", "04", "08", "0C", "10", "14", "18", "1C", "20", "24", "28", "2C", "30"],
+    #     ["01", "05", "09", "0D", "11", "15", "19", "1D", "21", "25", "29", "2D"],
+    #     ["02", "06", "0A", "0E", "12", "16", "1A", "1E", "22", "26", "2A", "2E"],
+    #     ["03", "07", "0B", "0F", "13", "17", "1B", "1F", "23", "27", "2B", "2F"]
+    # ]
 
     # initial_board = rp.get_tableau()
     # if not initial_board:

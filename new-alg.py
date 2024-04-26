@@ -29,14 +29,14 @@ def find_score(board: list[list[str]], free_cells: list[str], foundations: list[
     return score
 
 
-def make_move(board, free_cells, move, foundations):
+def make_move(orig_board, orig_free_cells, orig_foundations, move):
     
     src, dest = move
 
     # Making changes on copies
-    board = [col.copy() for col in board]
-    free_cells = free_cells.copy()
-    foundations = [foundation.copy() for foundation in foundations]
+    board = [col.copy() for col in orig_board]
+    free_cells = orig_free_cells.copy()
+    foundations = [foundation.copy() for foundation in orig_foundations]
 
     # Moving from column to free cell
     if dest[0] == "F" and src[0] == "C":
@@ -96,7 +96,7 @@ def generate_moves(board, free_cells, foundations):
                 if (not foundation and card in ACES) or \
                         (foundation and int(foundation[-1], 16)%4 == int(card,16)%4 and int(card, 16) == int(foundation[-1], 16) + 4):
                     new_move = ("C{}".format(col_index), "P{}".format(f_index))
-                    temp_board, temp_free, temp_found = make_move(board, free_cells, new_move, foundations)
+                    temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                     score = find_score(temp_board, temp_free, temp_found)
                     heapq.heappush(moves, (score*-1, new_move))
                     # moves.append(("C{}".format(col_index), "P{}".format(f_index)))
@@ -110,7 +110,7 @@ def generate_moves(board, free_cells, foundations):
             if (not foundation and card in ACES) or \
                     (foundation and int(foundation[-1], 16)%4 == int(card,16)%4 and int(card, 16) == int(foundation[-1], 16) + 4):
                 new_move = ("F{}".format(free_col_index), "P{}".format(f_index))
-                temp_board, temp_free, temp_found = make_move(board, free_cells, new_move, foundations)
+                temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                 score = find_score(temp_board, temp_free, temp_found)
                 heapq.heappush(moves, (score*-1, new_move))
                 # moves.append(("F{}".format(free_col_index), "P{}".format(f_index)))
@@ -130,7 +130,7 @@ def generate_moves(board, free_cells, foundations):
                                         (int(dest_col[-1],16)%4 == 3 and int(src_col[-1],16)%4 == 2)) and \
                                         (int(dest_col[-1], 16)//4 - 1 ==  int(src_col[-1],16)//4)):
                         new_move = ("C{}".format(src_col_index), "C{}".format(dest_col_index))
-                        temp_board, temp_free, temp_found = make_move(board, free_cells, new_move, foundations)
+                        temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                         score = find_score(temp_board, temp_free, temp_found)
                         heapq.heappush(moves, (score*-1, new_move))
                         # moves.append(("C{}".format(src_col_index), "C{}".format(dest_col_index)))
@@ -141,7 +141,7 @@ def generate_moves(board, free_cells, foundations):
             for free_index, free_cell in enumerate(free_cells):
                 if free_cell == "FF":  # Empty free cell
                     new_move = ("C{}".format(col_index), "F{}".format(free_index))
-                    temp_board, temp_free, temp_found = make_move(board, free_cells, new_move, foundations)
+                    temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                     score = find_score(temp_board, temp_free, temp_found)
                     heapq.heappush(moves, (score*-1, new_move))
                     # moves.append(("C{}".format(col_index), "F{}".format(free_index)))
@@ -162,7 +162,7 @@ def generate_moves(board, free_cells, foundations):
                                         (int(dest_col[-1],16)%4 == 3 and int(free_col[-1],16)%4 == 2)) and \
                                         (int(dest_col[-1], 16)//4 - 1 == int(free_col[-1], 16)//4)):      # check that its one number lower
                         new_move = ("F{}".format(free_col_index), "C{}".format(dest_col_index))
-                        temp_board, temp_free, temp_found = make_move(board, free_cells, new_move, foundations)
+                        temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                         score = find_score(temp_board, temp_free, temp_found)
                         heapq.heappush(moves, (score*-1, new_move))
                         # moves.append(("F{}".format(free_col_index), "C{}".format(dest_col_index)))
@@ -180,14 +180,55 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
     # Don't want to bother exploring this node, so just return everything
     if depth >= 6:
         return [False, board, cells, foundations, visited, moves]
+    
+    if not visited:
+        visited = set()
+    if not moves:
+        moves = list()
 
+    board_state = (tuple(tuple(col) for col in board), tuple(cells), tuple(tuple(col) for col in foundations))
+    if board_state in visited:
+        return [False, None, None, None, None, None]
+    visited.add(board_state)
+
+    possible_moves = generate_moves(board, cells, foundations)
+    if not possible_moves:
+        [False, None, None, None, None, None]
+
+    best_score = -1 * sys.maxsize
+    best_board = None
+    best_freecells = None
+    best_foundations = None
+    # best_moves = None
+    best_visited = None
+    move_to_add = None
+    for _, move in possible_moves:
+        temp_board, temp_cells, temp_foundations = make_move(board, cells, foundations, move)
+        status, new_board, new_cells, new_foundations, new_visited, new_moves = solve_freecell(temp_board, temp_cells, temp_foundations, visited, moves, depth+1)
+        if status:
+            return [status, new_board, new_cells, new_foundations, new_visited, new_moves]
+        if not new_board:
+            continue
+        new_score = find_score(new_board, new_cells, new_foundations)
+        # Update best score
+        if new_score > best_score:
+            best_score = new_score
+            best_board = [col.copy() for col in new_board]
+            best_freecells = new_cells.copy()
+            best_foundations = [col.copy() for col in new_foundations]
+            best_visited = new_visited.copy()
+            # best_moves = new_moves.copy()
+            # move_to_add = move
+    
+    if best_board:
+        return [False, best_board, best_freecells, best_foundations, best_visited, best_moves]
     return [False, None, None, None, None, None]
 
 def helper(board: list[list[str]], cells: list[str], foundations: list[list[str]], visited: Optional[set], moves: Optional[list[tuple]]) -> Optional[list[tuple]]:
 
-    temp_board = board.copy()
+    temp_board = [col.copy() for col in board]
     temp_cells = cells.copy()
-    temp_foundations = foundations.copy()
+    temp_foundations = [col.copy() for col in foundations]
     temp_visited = None
     if visited:
         temp_visited = visited.copy()
@@ -202,7 +243,6 @@ def helper(board: list[list[str]], cells: list[str], foundations: list[list[str]
         # No possible solution at all
         if not temp_board:
             return None
-    
 
 
 
@@ -243,9 +283,9 @@ def main():
     #     ["00", "19", "11", "2F", "06", "2B"],
     #     ["21", "2A", "28", "30", "33", "23"]
     # ]
-    # initial_board = [
-    #     ["33"], ["32"], ["31"], [], [], [], [], []
-    # ]
+    initial_board = [
+        ["33"], ["32"], ["31"], [], [], [], [], []
+    ]
     
     '''
     initial_board = [
@@ -271,28 +311,28 @@ def main():
     #     ["33", "32", "31", "30", "2F", "2E"]
     # ]
 
-    # initial_free_cells = ["FF", "FF", "FF", "FF"]
+    initial_free_cells = ["FF", "FF", "FF", "FF"]
     
     # initial_foundations = [[],[],[],[]]
-    # initial_foundations = [
-    #     ["00", "04", "08", "0C", "10", "14", "18", "1C", "20", "24", "28", "2C", "30"],
-    #     ["01", "05", "09", "0D", "11", "15", "19", "1D", "21", "25", "29", "2D"],
-    #     ["02", "06", "0A", "0E", "12", "16", "1A", "1E", "22", "26", "2A", "2E"],
-    #     ["03", "07", "0B", "0F", "13", "17", "1B", "1F", "23", "27", "2B", "2F"]
-    # ]
+    initial_foundations = [
+        ["00", "04", "08", "0C", "10", "14", "18", "1C", "20", "24", "28", "2C", "30"],
+        ["01", "05", "09", "0D", "11", "15", "19", "1D", "21", "25", "29", "2D"],
+        ["02", "06", "0A", "0E", "12", "16", "1A", "1E", "22", "26", "2A", "2E"],
+        ["03", "07", "0B", "0F", "13", "17", "1B", "1F", "23", "27", "2B", "2F"]
+    ]
 
-    initial_board = rp.get_tableau()
-    if not initial_board:
-        print(f'Error getting game data')
-        return 1
-    initial_free_cells = rp.get_freecells()
-    if not initial_free_cells:
-        print(f'Error getting game data')
-        return 1
-    initial_foundations = rp.get_foundations()
-    if not initial_foundations:
-        print(f'Error getting game data')
-        return 1
+    # initial_board = rp.get_tableau()
+    # if not initial_board:
+    #     print(f'Error getting game data')
+    #     return 1
+    # initial_free_cells = rp.get_freecells()
+    # if not initial_free_cells:
+    #     print(f'Error getting game data')
+    #     return 1
+    # initial_foundations = rp.get_foundations()
+    # if not initial_foundations:
+    #     print(f'Error getting game data')
+    #     return 1
 
     initial_score = find_score(initial_board, initial_free_cells, initial_foundations)
     # solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, 0, initial_score)

@@ -3,7 +3,9 @@
 
 import sys
 import heapq
-from readProgram import readProgram 
+from readProgram import readProgram
+
+numCalls = 0
 
 sys.setrecursionlimit(10000)
 
@@ -18,8 +20,8 @@ def print_game_state(board: list[list[str]], free_cells: list[str], foundations:
 def find_score(board: list[list[str]], free_cells: list[str], foundations: list[list[str]]) -> int:
     # -1 for every card in the freecells, +2 for every card in the foundation
     score = 0
-    score -= len(list(filter(lambda l: l != 'FF', free_cells)))
-    score += (sum(map(len, foundations))) * 2
+    score -= (len(list(filter(lambda l: l != 'FF', free_cells)))) * 2
+    score += (sum(map(len, foundations))) * 3
     
     # smaller and larger columns are better than medium_sized columns
     all_lens = list(map(len, board))
@@ -171,22 +173,19 @@ def generate_moves(board, free_cells, foundations):
     return moves
 
 
-def solve_freecell(board, free_cells, foundations, visited_states=None, moves=None, depth=0, score_to_compare=0):
+def solve_freecell(board, free_cells, foundations, visited_states=None, moves=None, depth=0):
 
-    # If depth is 5 or more, compare to score to compare
-    new_depth = depth
-    new_score = score_to_compare
-    if depth >= 50:
-        return False, None, None
-    if depth % 5 == 0:
-    # if depth >= 3:
-        score = find_score(board, free_cells, foundations)
-        if (score < score_to_compare):
-            # print(f'Stopping searching')
-            return False, None, None
-        new_depth = 0
-        new_score = score
-    # print_game_state(board, free_cells, foundations)
+    global numCalls
+    numCalls += 1
+    if (numCalls % 100000 == 0):
+        print(numCalls)
+        print(f'have {len(moves)} possible moves')
+
+    if depth >= 6:
+        status = False
+        if board:
+            status = True
+        return status, board, free_cells, foundations, visited_states, moves
     
     # Initialize visited_states and moves if not provided. Visited States just stores a bunch of past boards
     if visited_states is None:
@@ -196,16 +195,16 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
         moves = []
 
     # Convert the board state to a tuple for hashing
-    board_state = tuple(tuple(col) for col in board)
+    board_state = (tuple(tuple(col) for col in board), tuple(free_cells), tuple(tuple(col) for col in foundations))
 
     # Base Case: If all columns are empty, the game is solved
     if all(not col for col in board) and all(free == "FF" for free in free_cells):
-        return True, board, moves
+        return True, board, free_cells, foundations, visited_states, moves
 
     # Check if we've already visited this state
     if board_state in visited_states:
         # print("Return 2")
-        return False, None, None
+        return False, None, None, None, None, None
 
     visited_states.add(board_state)
     # Recursive Step: Generate all possible moves. Possible_moves is frontier
@@ -215,8 +214,14 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
     # print()
     if not possible_moves:
         # print("Return 3")
-        return False, None, None
+        return False, None, None, None, None, None
 
+    best_score = -1 * sys.maxsize
+    best_board = None
+    best_freecells = None
+    best_foundations = None
+    best_moves = None
+    best_visited = None
     for idx, temp in enumerate(possible_moves):
         move = temp[1]
 
@@ -240,13 +245,50 @@ def solve_freecell(board, free_cells, foundations, visited_states=None, moves=No
     
         # Recurse and explore this move
         # solved, result_board, move_list = solve_freecell(new_board, new_free_cells, new_foundations, visited_states, moves + [move])
-        solved, result_board, move_list = solve_freecell(new_board, new_free_cells, new_foundations, visited_states, moves + [move], new_depth+1, new_score)
+        solved, result_board, result_freecells, result_foundations, result_visited, move_list = solve_freecell(new_board, new_free_cells, new_foundations, visited_states, moves + [move], depth+1)
+        score = -1 * sys.maxsize
+        if result_board:
+            score = find_score(result_board, result_freecells, result_foundations)
+        if score > best_score:
+            best_score = score
+            best_board = result_board.copy()
+            best_freecells = result_freecells.copy()
+            best_foundations = result_foundations.copy()
+            best_moves = move_list.copy()
+            best_visited = result_visited.copy()
+            
 
         if solved:
             # print("Return 4")
-            return True, result_board, move_list
+            return True, result_board, result_freecells, result_foundations, result_visited, move_list
     # print("Return 5")
-    return False, None, None
+    # return False, None, None, None, None
+    status = False
+    if best_board:
+        status = True
+    return status, best_board, best_freecells, best_foundations, best_visited, best_moves
+
+def helper(board, free_cells, foundations, visited_states=None, moves=None):
+
+    temp_board = board.copy()
+    temp_cells = free_cells.copy()
+    temp_foundations = foundations.copy()
+    temp_visited = None
+    if visited_states:
+        temp_visited = visited_states.copy()
+    temp_moves = None
+    if moves:
+        temp_moves = moves.copy()
+    found = False
+    solved = False
+    while not found:
+        solved, temp_board, temp_cells, temp_foundations, temp_visited, temp_moves = solve_freecell(temp_board, temp_cells, temp_foundations, temp_visited, temp_moves, 0)
+        if temp_board:
+            if all(not col for col in temp_board) and all(free == "FF" for free in temp_cells):
+                return True, temp_board, temp_cells, temp_foundations, temp_visited, temp_moves
+
+
+
 
 
 def main():
@@ -322,10 +364,6 @@ def main():
     #     ["33", "32", "31", "30", "2F", "2E"]
     # ]
 
-    initial_board = rp.get_tableau()
-    initial_free_cells = rp.get_freecells()
-    initial_foundations = rp.get_foundations()
-
     # initial_free_cells = ["FF", "FF", "FF", "FF"]
     
     # initial_foundations = [[],[],[],[]]
@@ -337,15 +375,22 @@ def main():
     # ]
 
     initial_board = rp.get_tableau()
+    if not initial_board:
+        print(f'Error getting game data')
+        return 1
     initial_free_cells = rp.get_freecells()
+    if not initial_free_cells:
+        print(f'Error getting game data')
+        return 1
     initial_foundations = rp.get_foundations()
-    if not initial_board or not initial_free_cells or not initial_foundations:
+    if not initial_foundations:
         print(f'Error getting game data')
         return 1
 
     initial_score = find_score(initial_board, initial_free_cells, initial_foundations)
     # solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, 0, initial_score)
-    solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, None, None, 0, initial_score)
+    # solved, final_board, final_freecells, final_foundations, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, None, None, 0)
+    solved, final_board, final_freecells, final_foundations, final_visited, move_list = helper(initial_board, initial_free_cells, initial_foundations, None, None)
 
     if solved:
         print("Solution found! Moves:")

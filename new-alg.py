@@ -59,7 +59,9 @@ def find_score(board: list[list[str]], free_cells: list[str], foundations: list[
 
 def make_move(orig_board, orig_free_cells, orig_foundations, move):
     
-    src, dest = move
+    src_comp, dest = move
+    src, src_card = src_comp
+    print(f'move is {move}, src is {src}, src card is {src_card}')
 
     # Making changes on copies
     board = [col.copy() for col in orig_board]
@@ -67,21 +69,21 @@ def make_move(orig_board, orig_free_cells, orig_foundations, move):
     foundations = [foundation.copy() for foundation in orig_foundations]
 
     # Moving from column to free cell
-    if dest[0] == "F" and src[0] == "C":
+    if dest[0] == "F" and src[0] == "C" and src_card == 0:
         free_index = int(dest[1])
         src = int(src[1])
         if board[src]:
             free_cells[free_index] = board[src].pop()
 
     # Moving from free cell to column
-    elif src[0] == "F" and dest[0] == "C":
+    elif src[0] == "F" and dest[0] == "C" and src_card == 0:
         dest = int(dest[1])
         free_index = int(src[1])
         board[dest].append(free_cells[free_index])
         free_cells[free_index] = "FF"
 
     # Move from Freecell to foundation
-    elif src[0] == "F" and dest[0] == "P":
+    elif src[0] == "F" and dest[0] == "P" and src_card == 0:
         dest = int(dest[1])
         free_index = int(src[1])
         foundations[dest].append(free_cells[free_index])
@@ -89,7 +91,7 @@ def make_move(orig_board, orig_free_cells, orig_foundations, move):
 
 
     # Moving from column to foundation
-    elif dest[0] == "P" and src[0] == "C":
+    elif dest[0] == "P" and src[0] == "C" and src_card == 0:
         foundation_index = int(dest[1])
         src = int(src[1])
         if board[src]:
@@ -97,7 +99,7 @@ def make_move(orig_board, orig_free_cells, orig_foundations, move):
             foundations[foundation_index].append(card)
 
     # Moving within columns
-    elif dest[0] == "C" and src[0] == "C":
+    elif dest[0] == "C" and src[0] == "C" and src_card == 0:
         dest_col = int(dest[1])
         src = int(src[1])
         if board[src]:
@@ -126,7 +128,9 @@ def generate_moves(board, free_cells, foundations):
                     new_move = ("C{}".format(col_index), "P{}".format(f_index))
                     temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                     score = find_score(temp_board, temp_free, temp_found)
-                    heapq.heappush(moves, (score*-1, new_move))
+                    # int, tuple(str, int), str
+                    # heapq.heappush(moves, (score*-1, new_move))
+                    heapq.heappush(moves, (score*-1, ("C{}".format(col_index), 0), "P{}".format(f_index)))
                     # moves.append(("C{}".format(col_index), "P{}".format(f_index)))
 
 
@@ -140,7 +144,8 @@ def generate_moves(board, free_cells, foundations):
                 new_move = ("F{}".format(free_col_index), "P{}".format(f_index))
                 temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                 score = find_score(temp_board, temp_free, temp_found)
-                heapq.heappush(moves, (score*-1, new_move))
+                # heapq.heappush(moves, (score*-1, new_move))
+                heapq.heappush(moves, (score*-1, ("F{}".format(col_index), 0), "P{}".format(f_index)))
                 # moves.append(("F{}".format(free_col_index), "P{}".format(f_index)))
 
     # Move within columns
@@ -160,7 +165,8 @@ def generate_moves(board, free_cells, foundations):
                         new_move = ("C{}".format(src_col_index), "C{}".format(dest_col_index))
                         temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                         score = find_score(temp_board, temp_free, temp_found)
-                        heapq.heappush(moves, (score*-1, new_move))
+                        # heapq.heappush(moves, (score*-1, new_move))
+                        heapq.heappush(moves, (score*-1, ("C{}".format(src_col_index), 0), "C{}".format(dest_col_index)))
                         # moves.append(("C{}".format(src_col_index), "C{}".format(dest_col_index)))
 
     # Move from columns to free cells
@@ -171,7 +177,8 @@ def generate_moves(board, free_cells, foundations):
                     new_move = ("C{}".format(col_index), "F{}".format(free_index))
                     temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                     score = find_score(temp_board, temp_free, temp_found)
-                    heapq.heappush(moves, (score*-1, new_move))
+                    # heapq.heappush(moves, (score*-1, new_move))
+                    heapq.heappush(moves, (score*-1, ("C{}".format(col_index), 0), "F{}".format(free_index)))
                     # moves.append(("C{}".format(col_index), "F{}".format(free_index)))
                     break
 
@@ -192,13 +199,14 @@ def generate_moves(board, free_cells, foundations):
                         new_move = ("F{}".format(free_col_index), "C{}".format(dest_col_index))
                         temp_board, temp_free, temp_found = make_move(board, free_cells, foundations, new_move)
                         score = find_score(temp_board, temp_free, temp_found)
-                        heapq.heappush(moves, (score*-1, new_move))
+                        # heapq.heappush(moves, (score*-1, new_move))
+                        heapq.heappush(moves, (score*-1, ("F{}".format(free_col_index), 0), "C{}".format(dest_col_index)))
                         # moves.append(("F{}".format(free_col_index), "C{}".format(dest_col_index)))
 
     # Check for in-column moves, that move multiple cards
-    max_cards = len(list(filter(lambda l: l == 'FF', free_cells))) + 1
-    for col_num, col in board:
-        top_card = col[-1]
+    # max_cards = len(list(filter(lambda l: l == 'FF', free_cells))) + 1
+    # for col_num, col in board:
+    #     top_card = col[-1]
 
 
         
@@ -242,19 +250,15 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
     best_foundations = None
     best_moves = None
     best_visited = None
-    # if len(possible_moves) == 0:
-    #     print(f'Freecells: {cells}')
-    #     print(f'Foundations: {foundations}')
-    #     print(f'Board:')
-    #     for c in board:
-    #         print(c)
-    #     print(f'No possible moves')
-    for _, move in possible_moves[:9]:
+    # for _, move in possible_moves[:9]:
+    for _, src, dest in possible_moves[:9]:
+        move = (src, dest)
         temp_board, temp_cells, temp_foundations = make_move(board, cells, foundations, move)
         temp_moves = moves.copy()
         temp_moves.append(move)
         print(f'Taking move {move}')
         print('--------------------------')
+        stop = input('')
         status, new_board, new_cells, new_foundations, new_visited, new_moves = solve_freecell(temp_board, temp_cells, temp_foundations, visited, temp_moves, depth+1)
         if status:
             return [status, new_board, new_cells, new_foundations, new_visited, new_moves]
@@ -387,13 +391,6 @@ def main():
     if not initial_foundations:
         print(f'Error getting game data')
         return 1
-    
-    # for idx, c in enumerate(initial_board):
-    #     for erm, card in enumerate(c):
-    #         print(f'idx is {idx}, erm is {erm}, card is {card}')
-            # result = moveable(initial_board, idx, erm)
-            # print(f'For card {card}, the result of moveable was {result}')
-    sys.exit(0)
 
     initial_score = find_score(initial_board, initial_free_cells, initial_foundations)
     # solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, 0, initial_score)

@@ -8,7 +8,7 @@
 #define BYTESIZE 4
 #define FREECELLS 0x01008AB0
 #define FOUNDATIONS 0x01008AC0
-LPVOID TABLEAU[8] = {(LPVOID)0x01008B04, (LPVOID)0x01008B58, (LPVOID)0x01008BAC, (LPVOID)0x01008C00, (LPVOID)0x01008C54, (LPVOID)0x01008CA8, (LPVOID)0x01008C5C, (LPVOID)0x01008D50};
+LPVOID TABLEAU[8] = {(LPVOID)0x01008B04, (LPVOID)0x01008B58, (LPVOID)0x01008BAC, (LPVOID)0x01008C00, (LPVOID)0x01008C54, (LPVOID)0x01008CA8, (LPVOID)0x01008CFC, (LPVOID)0x01008D50};
 #define streq(a, b) (strcmp(a, b) == 0)
 
 DWORD find_pid(char *processName) {
@@ -144,6 +144,9 @@ int get_tableau(unsigned char* board) {
             printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
             CloseHandle(processHandle);
             return -1;
+        }
+        for (int j=0; j<BYTESIZE*COLUMNSIZE; j+=BYTESIZE) {
+            printf("%02x %02x %02x %02x\n", buffer[j], buffer[j+1], buffer[j+2], buffer[j+3]);
         }
         for (int j=0; j<BYTESIZE*COLUMNSIZE; j+=4) {
             board[(COLUMNSIZE*i)+(j/BYTESIZE)] = buffer[j];

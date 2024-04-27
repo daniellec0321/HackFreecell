@@ -10,6 +10,27 @@ numCalls = 0
 
 ACES = ["00", "01", "02", "03"]
 
+def get_color(card: str) -> str:
+    num = int(card, 16)
+    if (num % 4 == 1) or (num % 4 == 2):
+        return 'red'
+    return 'black'
+
+def moveable(board: list[list[str]], col_index: int, card_index: int) -> bool:
+    col = board[col_index].copy()
+    for i in range(card_index, len(col)-1):
+        if ((int(board[col_index][i], 16) / 4)-1) != (int(board[col_index][i+1], 16) / 4):
+            if board[col_index][card_index] == '11':
+                print(f'bad numbers')
+            return False
+        curr_color = get_color(board[col_index][i])
+        next_color = get_color(board[col_index][i+1])
+        if curr_color == next_color:
+            if board[col_index][card_index] == '11':
+                print(f'bad color')
+            return False
+    return True
+
 def myFind(l: list, n) -> int:
     try:
         ret = l.index(n)
@@ -26,41 +47,7 @@ def print_game_state(board: list[list[str]], free_cells: list[str], foundations:
 def find_score(board: list[list[str]], free_cells: list[str], foundations: list[list[str]]) -> int:
     # -2 for every card in the freecells, +2 for every card in the foundation
     score = 0
-    # score -= (len(list(filter(lambda l: l != 'FF', free_cells)))) * 2
-    erm = False
-    for card in map(lambda l: int(l, 16), filter(lambda l: l != 'FF', free_cells)):
-        erm = True
-        # Find cards 'above' it
-        cards_above = [card+5, card+6] # Default clubs
-        if 48 <= card <= 51: #If the cards are kings
-            cards_above = [255, 255]
-            # do more stuff...
-            continue
-        elif card % 4 == 1: #diamond
-            cards_above = [card+3, card+6]
-        elif card % 4 == 2: #heart
-            cards_above = [card+2, card+5]
-        elif card % 4 == 3:
-            cards_above = [card+2, card+3]
-        # Find where card is on the board
-        vals = [20, 20]
-        for col in board:
-            thing = list(map(lambda l: int(l, 16), list(reversed(col.copy()))))
-            val1 = myFind(thing, cards_above[0])
-            val2 = myFind(thing, cards_above[1])
-            if val1 != -1:
-                vals[0] = val1
-            if val2 != -1:
-                vals[1] = val2
-        # Check if it is 
-    if erm:
-        print(f'Freecells : {free_cells}')
-        print(f'Foundations: {foundations}')
-        print(f'Board')
-        for c in board:
-            print(c)
-        print(f'The score (no foundations) is {score}')
-        sys.exit(0)
+    score -= (len(list(filter(lambda l: l != 'FF', free_cells)))) * 2
     score += (sum(map(len, foundations))) * 3
     
     # smaller and larger columns are better than medium_sized columns
@@ -208,6 +195,12 @@ def generate_moves(board, free_cells, foundations):
                         heapq.heappush(moves, (score*-1, new_move))
                         # moves.append(("F{}".format(free_col_index), "C{}".format(dest_col_index)))
 
+    # Check for in-column moves, that move multiple cards
+    max_cards = len(list(filter(lambda l: l == 'FF', free_cells))) + 1
+    for col_num, col in board:
+        top_card = col[-1]
+
+
         
 
     return moves
@@ -216,7 +209,6 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
 
     global numCalls
     numCalls += 1
-    # print(f'Numcalls is {numCalls}')
     
     # Check if this is a winning game state
     if len(list(filter(lambda l: len(l) != 13, foundations))) == 0:
@@ -239,6 +231,10 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
     possible_moves = generate_moves(board, cells, foundations)
     if not possible_moves:
         [False, None, None, None, None, None]
+    for p in possible_moves:
+        print(p)
+    if numCalls == 3:
+        sys.exit(0)
 
     best_score = -1 * sys.maxsize
     best_board = None
@@ -246,17 +242,19 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
     best_foundations = None
     best_moves = None
     best_visited = None
-    if len(possible_moves) == 0:
-        print(f'Freecells: {cells}')
-        print(f'Foundations: {foundations}')
-        print(f'Board:')
-        for c in board:
-            print(c)
-        print(f'No possible moves')
+    # if len(possible_moves) == 0:
+    #     print(f'Freecells: {cells}')
+    #     print(f'Foundations: {foundations}')
+    #     print(f'Board:')
+    #     for c in board:
+    #         print(c)
+    #     print(f'No possible moves')
     for _, move in possible_moves[:9]:
         temp_board, temp_cells, temp_foundations = make_move(board, cells, foundations, move)
         temp_moves = moves.copy()
         temp_moves.append(move)
+        print(f'Taking move {move}')
+        print('--------------------------')
         status, new_board, new_cells, new_foundations, new_visited, new_moves = solve_freecell(temp_board, temp_cells, temp_foundations, visited, temp_moves, depth+1)
         if status:
             return [status, new_board, new_cells, new_foundations, new_visited, new_moves]
@@ -303,6 +301,7 @@ def helper(board: list[list[str]], cells: list[str], foundations: list[list[str]
 def main():
 
     rp = readProgram()
+    # Easiest freecell game: 25904
 
     # freecells = ['FF', 'FF', 'FF', 'FF']
     # foundations = [[], ['01'], [], []]
@@ -376,6 +375,7 @@ def main():
     # ]
 
     initial_board = rp.get_tableau()
+    # print(initial_board)
     if not initial_board:
         print(f'Error getting game data')
         return 1
@@ -387,6 +387,13 @@ def main():
     if not initial_foundations:
         print(f'Error getting game data')
         return 1
+    
+    # for idx, c in enumerate(initial_board):
+    #     for erm, card in enumerate(c):
+    #         print(f'idx is {idx}, erm is {erm}, card is {card}')
+            # result = moveable(initial_board, idx, erm)
+            # print(f'For card {card}, the result of moveable was {result}')
+    sys.exit(0)
 
     initial_score = find_score(initial_board, initial_free_cells, initial_foundations)
     # solved, final_board, move_list = solve_freecell(initial_board, initial_free_cells, initial_foundations, 0, initial_score)

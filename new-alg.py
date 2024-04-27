@@ -34,6 +34,8 @@ def find_score(board: list[list[str]], free_cells: list[str], foundations: list[
         cards_above = [card+5, card+6] # Default clubs
         if 48 <= card <= 51: #If the cards are kings
             cards_above = [255, 255]
+            # do more stuff...
+            continue
         elif card % 4 == 1: #diamond
             cards_above = [card+3, card+6]
         elif card % 4 == 2: #heart
@@ -41,20 +43,16 @@ def find_score(board: list[list[str]], free_cells: list[str], foundations: list[
         elif card % 4 == 3:
             cards_above = [card+2, card+3]
         # Find where card is on the board
+        vals = [20, 20]
         for col in board:
             thing = list(map(lambda l: int(l, 16), list(reversed(col.copy()))))
             val1 = myFind(thing, cards_above[0])
             val2 = myFind(thing, cards_above[1])
-            print(f'for card {hex(card)}, {val1}, {val2}')
-            if (val1 != -1 and val2 != -1):
-                score -= min(val1, val2)
-            elif val1 != -1:
-                score -= val1
-            elif val2 != -1:
-                score -= val2
-            else:
-                score -= 10
-            break
+            if val1 != -1:
+                vals[0] = val1
+            if val2 != -1:
+                vals[1] = val2
+        # Check if it is 
     if erm:
         print(f'Freecells : {free_cells}')
         print(f'Foundations: {foundations}')

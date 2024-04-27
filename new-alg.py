@@ -59,9 +59,11 @@ def find_score(board: list[list[str]], free_cells: list[str], foundations: list[
 
 def make_move(orig_board, orig_free_cells, orig_foundations, move):
     
-    src_comp, dest = move
-    src, src_card = src_comp
-    print(f'move is {move}, src is {src}, src card is {src_card}')
+    # src_comp, dest = move
+    # src, src_card = src_comp
+    # print(f'move is {move}, src is {src}, src card is {src_card}')
+    src, dest = move
+    src_col, src_index = src
 
     # Making changes on copies
     board = [col.copy() for col in orig_board]
@@ -69,21 +71,21 @@ def make_move(orig_board, orig_free_cells, orig_foundations, move):
     foundations = [foundation.copy() for foundation in orig_foundations]
 
     # Moving from column to free cell
-    if dest[0] == "F" and src[0] == "C" and src_card == 0:
+    if dest[0] == "F" and src_col[0] == "C":
         free_index = int(dest[1])
-        src = int(src[1])
-        if board[src]:
-            free_cells[free_index] = board[src].pop()
+        src = int(src_col[1])
+        # if board[src]:
+        free_cells[free_index] = board[src].pop()
 
     # Moving from free cell to column
-    elif src[0] == "F" and dest[0] == "C" and src_card == 0:
+    elif src_col[0] == "F" and dest[0] == "C":
         dest = int(dest[1])
-        free_index = int(src[1])
+        free_index = int(src_col[1])
         board[dest].append(free_cells[free_index])
         free_cells[free_index] = "FF"
 
     # Move from Freecell to foundation
-    elif src[0] == "F" and dest[0] == "P" and src_card == 0:
+    elif src_col[0] == "F" and dest[0] == "P":
         dest = int(dest[1])
         free_index = int(src[1])
         foundations[dest].append(free_cells[free_index])
@@ -236,6 +238,9 @@ def solve_freecell(board: list[list[str]], cells: list[str], foundations: list[l
         return [False, None, None, None, None, None]
     visited.add(board_state)
 
+    # Possible moves is a list of tuples
+    # tuple(int,   tuple(str, int), str)
+    #       score, src,             dest
     possible_moves = generate_moves(board, cells, foundations)
     if not possible_moves:
         [False, None, None, None, None, None]

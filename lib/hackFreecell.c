@@ -145,9 +145,6 @@ int get_tableau(unsigned char* board) {
             CloseHandle(processHandle);
             return -1;
         }
-        for (int j=0; j<BYTESIZE*COLUMNSIZE; j+=BYTESIZE) {
-            printf("%02x %02x %02x %02x\n", buffer[j], buffer[j+1], buffer[j+2], buffer[j+3]);
-        }
         for (int j=0; j<BYTESIZE*COLUMNSIZE; j+=4) {
             board[(COLUMNSIZE*i)+(j/BYTESIZE)] = buffer[j];
         }

@@ -42,7 +42,7 @@ class readProgram:
             board.append(to_add.copy())
         return board
 
-    def get_tableau(self) -> Optional[list[list[str]]]:
+    def get_tableau(self) -> Optional[list[str]]:
         'Edits the given board to fill it with the tableau. The return value is 0 on success, -1 on failure'
         temp = (ct.c_ubyte * (NUMCOLUMNS*COLUMNSIZE))()
         result = HFLIB.get_tableau(temp)
@@ -52,14 +52,10 @@ class readProgram:
         for i in range(NUMCOLUMNS):
             to_add = list()
             for j in range(COLUMNSIZE):
-                curr = temp[(i*COLUMNSIZE)+j]
-                if curr == 255:
+                curr_index = (i*COLUMNSIZE)+j
+                if temp[curr_index] == 255:
                     break
-                pos = hex(curr)[2:]
-                if len(pos) < 2:
-                    pos = '0' + pos
-                pos = pos.upper()
-                to_add.append(pos)
+                to_add.append(temp[curr_index])
             board.append(to_add.copy())
         return board
 

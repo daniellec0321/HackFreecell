@@ -42,6 +42,33 @@ DWORD find_pid(char *processName) {
     return (DWORD)pid;
 }
 
+int get_game_number(unsigned char *ret) {
+    char *processName = "freecell.exe";
+    DWORD pid = find_pid(processName);
+    if (pid == -1) {
+        printf("Failed to find pid of process named %s\n", processName);
+        return -1;
+    }
+    // Open process of the running executable
+    HANDLE processHandle = OpenProcess(PROCESS_VM_READ, FALSE, pid);
+    if (processHandle == NULL) {
+        printf("Failed to open process. Error code: %ld\n", GetLastError());
+        return -1;
+    }
+    LPVOID addr = (LPVOID)0x0100811F;
+    SIZE_T bytesRead;
+    BYTE buffer[5*BYTESIZE]; // Buffer to store the read data
+    if (!ReadProcessMemory(processHandle, addr, buffer, 5*BYTESIZE, &bytesRead)) {
+        printf("Failed to read from process memory. Error code: %ld\n", GetLastError());
+        CloseHandle(processHandle);
+        return -1;
+    }
+    for (int i=0; i<5; i++) {
+        ret[i] = buffer[i];
+    }
+    return 0;
+}
+
 int get_freecells(unsigned char* board) {
 
     char *processName = "freecell.exe";

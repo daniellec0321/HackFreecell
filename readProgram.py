@@ -7,6 +7,20 @@ NUMCOLUMNS = 8
 HFLIB = ct.CDLL("lib/hackFreecell.dll")
 
 class readProgram:
+    def get_game_number(self) -> int:
+        temp = (ct.c_ubyte * 5)()
+        result = HFLIB.get_game_number(temp)
+        if (result == -1):
+            print(f'Error getting game board')
+            return -1
+        ret = ''
+        for b in temp:
+            if b == 0:
+                break
+            ret += chr(b)
+        ret = int(ret)
+        return ret
+    
     def get_freecells(self) -> Optional[list[str]]:
         'Edits the given board to fill it with the freecells. The return value is 0 on success, -1 on failure'
         temp = (ct.c_ubyte * 4)()

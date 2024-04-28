@@ -1,24 +1,28 @@
+import sys
 import requests
-import ctypes as ct
-HFLIB = ct.CDLL("lib/hackFreecell.dll")
+from readProgram import readProgram
 
-def get_game_number() -> int:
-    temp = (ct.c_ubyte * 5)()
-    result = HFLIB.get_game_number(temp)
-    if (result == -1):
-        print(f'Error getting game board')
-        return -1
-    ret = ''
-    for b in temp:
-        if b == 0:
-            break
-        ret += chr(b)
-    ret = int(ret)
-    return ret
+def get_solution(game_num: int) -> list[tuple[str, str], str]:
+    'Reads the game number and returns the moves as a list of tuples'
+    url = f'https://freecellgamesolutions.com/ds/?g={game_num}&v=All'
+    r = requests.get(url)
+    data = r.text
+    data = data.split('auto moves to home</tr>')[1]
+    to_read = data.split("adsbygoogle")
+    for section in to_read:
+        if '<tr>' not in section:
+            continue
+        print(f'------------')
+        print(section)
 
 def main():
-    test = get_game_number()
+    rp = readProgram()
+
+    game_num = rp.get_game_number()
+    if game_num == -1:
+        return 1
+    get_solution(game_num)
     return 0
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

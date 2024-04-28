@@ -1,0 +1,557 @@
+-=-=-=-=-=-=-=-=-=-=-=-
+
+Move a card from stack 3 to the foundations
+
+====================
+
+Move a card from stack 6 to freecell 0
+
+====================
+
+Move a card from stack 6 to freecell 1
+
+====================
+
+Move a card from stack 6 to the foundations
+
+====================
+
+Move a card from stack 0 to freecell 2
+
+====================
+
+Move a card from stack 0 to freecell 3
+
+====================
+
+Move a card from freecell 0 to stack 0
+
+====================
+
+Move a card from stack 6 to freecell 0
+
+====================
+
+Move 1 cards from stack 6 to stack 3
+
+====================
+
+Move a card from stack 6 to the foundations
+
+====================
+
+Move a card from freecell 2 to the foundations
+
+====================
+
+Move a card from stack 1 to freecell 2
+
+====================
+
+Move 1 cards from stack 1 to stack 6
+
+====================
+
+Move a card from stack 1 to the foundations
+
+====================
+
+Move a card from stack 6 to the foundations
+
+====================
+
+Move a card from stack 1 to the foundations
+
+====================
+
+Move 1 cards from stack 5 to stack 6
+
+====================
+
+Move a card from freecell 2 to stack 5
+
+====================
+
+Move 1 cards from stack 6 to stack 4
+
+====================
+
+Move a card from stack 1 to freecell 2
+
+====================
+
+Move 1 cards from stack 1 to stack 6
+
+====================
+
+Move a card from freecell 3 to stack 1
+
+====================
+
+Move a card from stack 1 to freecell 3
+
+====================
+
+Move a card from stack 1 to the foundations
+
+====================
+
+Move 2 cards from stack 3 to stack 4
+
+====================
+
+Move 1 cards from stack 2 to stack 1
+
+====================
+
+Move 1 cards from stack 6 to stack 2
+
+====================
+
+Move 1 cards from stack 7 to stack 6
+
+====================
+
+Move 1 cards from stack 7 to stack 6
+
+====================
+
+Move a card from freecell 2 to stack 7
+
+====================
+
+Move 2 cards from stack 7 to stack 4
+
+====================
+
+Move a card from freecell 0 to stack 7
+
+====================
+
+Move a card from stack 3 to freecell 2
+
+====================
+
+Move a card from stack 3 to freecell 0
+
+====================
+
+Move 1 cards from stack 3 to stack 5
+
+====================
+
+Move a card from stack 3 to the foundations
+
+====================
+
+Move a card from freecell 3 to stack 3
+
+====================
+
+Move 1 cards from stack 1 to stack 3
+
+====================
+
+Move a card from stack 2 to freecell 3
+
+====================
+
+Move 1 cards from stack 2 to stack 1
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from freecell 3 to stack 1
+
+====================
+
+Move a card from stack 2 to freecell 3
+
+====================
+
+Move a card from freecell 0 to stack 2
+
+====================
+
+Move a card from stack 3 to freecell 0
+
+====================
+
+Move a card from stack 3 to the foundations
+
+====================
+
+Move 1 cards from stack 3 to stack 7
+
+====================
+
+Move 1 cards from stack 2 to stack 3
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from freecell 1 to stack 2
+
+====================
+
+Move 2 cards from stack 4 to stack 3
+
+====================
+
+Move a card from stack 4 to the foundations
+
+====================
+
+Move a card from stack 7 to freecell 1
+
+====================
+
+Move a card from stack 7 to the foundations
+
+====================
+
+Move 1 cards from stack 7 to stack 6
+
+====================
+
+Move a card from freecell 1 to stack 7
+
+====================
+
+Move 2 cards from stack 7 to stack 6
+
+====================
+
+Move a card from stack 7 to the foundations
+
+====================
+
+Move a card from stack 2 to freecell 1
+
+====================
+
+Move 1 cards from stack 2 to stack 7
+
+====================
+
+Move a card from freecell 2 to stack 2
+
+====================
+
+Move a card from freecell 1 to stack 7
+
+====================
+
+Move 3 cards from stack 3 to stack 4
+
+====================
+
+Move a card from stack 5 to freecell 2
+
+====================
+
+Move a card from stack 5 to freecell 1
+
+====================
+
+Move 1 cards from stack 5 to stack 3
+
+====================
+
+Move a card from freecell 3 to stack 5
+
+====================
+
+Move a card from freecell 1 to stack 3
+
+====================
+
+Move a card from freecell 2 to stack 3
+
+====================
+
+Move a card from stack 0 to freecell 3
+
+====================
+
+Move a card from stack 0 to freecell 1
+
+====================
+
+Move 1 cards from stack 0 to stack 5
+
+====================
+
+Move a card from stack 0 to freecell 2
+
+====================
+
+Move a card from stack 0 to the foundations
+
+====================
+
+Move a card from stack 4 to the foundations
+
+====================
+
+Move a card from stack 0 to the foundations
+
+====================
+
+Move a card from freecell 0 to stack 0
+
+====================
+
+Move 1 cards from stack 3 to stack 1
+
+====================
+
+Move a card from stack 0 to freecell 0
+
+====================
+
+Move a card from freecell 2 to stack 0
+
+====================
+
+Move 1 cards from stack 7 to stack 0
+
+====================
+
+Move 1 cards from stack 1 to stack 3
+
+====================
+
+Move a card from stack 7 to freecell 2
+
+====================
+
+Move a card from freecell 0 to stack 7
+
+====================
+
+Move 1 cards from stack 3 to stack 1
+
+====================
+
+Move a card from stack 7 to freecell 0
+
+====================
+
+Move a card from freecell 1 to stack 7
+
+====================
+
+Move a card from freecell 3 to stack 7
+
+====================
+
+Move a card from stack 4 to freecell 1
+
+====================
+
+Move a card from stack 4 to the foundations
+
+====================
+
+Move a card from stack 6 to freecell 3
+
+====================
+
+Move a card from stack 6 to the foundations
+
+====================
+
+Move 1 cards from stack 6 to stack 5
+
+====================
+
+Move a card from stack 6 to the foundations
+
+====================
+
+Move a card from freecell 2 to the foundations
+
+====================
+
+Move 2 cards from stack 4 to stack 0
+
+====================
+
+Move a card from stack 4 to freecell 2
+
+====================
+
+Move 1 cards from stack 4 to stack 1
+
+====================
+
+Move 1 cards from stack 4 to stack 2
+
+====================
+
+Move 1 cards from stack 6 to stack 2
+
+====================
+
+Move a card from freecell 0 to stack 6
+
+====================
+
+Move 2 cards from stack 5 to stack 2
+
+====================
+
+Move 2 cards from stack 5 to stack 7
+
+====================
+
+Move a card from stack 5 to freecell 0
+
+====================
+
+Move 1 cards from stack 5 to stack 3
+
+====================
+
+Move a card from stack 5 to the foundations
+
+====================
+
+Move 1 cards from stack 0 to stack 5
+
+====================
+
+Move a card from stack 0 to the foundations
+
+====================
+
+Move a card from stack 0 to the foundations
+
+====================
+
+Move a card from stack 7 to the foundations
+
+====================
+
+Move a card from stack 4 to the foundations
+
+====================
+
+Move a card from stack 7 to the foundations
+
+====================
+
+Move a card from stack 3 to the foundations
+
+====================
+
+Move a card from freecell 2 to stack 0
+
+====================
+
+Move a card from stack 4 to freecell 2
+
+====================
+
+Move a card from stack 4 to the foundations
+
+====================
+
+Move a card from stack 6 to the foundations
+
+====================
+
+Move a card from freecell 1 to the foundations
+
+====================
+
+Move a card from freecell 3 to the foundations
+
+====================
+
+Move a card from stack 5 to the foundations
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from stack 0 to the foundations
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from stack 0 to the foundations
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from stack 1 to the foundations
+
+====================
+
+Move a card from stack 7 to the foundations
+
+====================
+
+Move a card from stack 7 to the foundations
+
+====================
+
+Move a card from stack 3 to the foundations
+
+====================
+
+Move a card from stack 1 to the foundations
+
+====================
+
+Move a card from stack 2 to the foundations
+
+====================
+
+Move a card from stack 3 to the foundations
+
+====================
+
+Move a card from stack 1 to the foundations
+
+====================
+
+Move a card from stack 1 to the foundations
+
+====================
+
+Move a card from freecell 0 to the foundations
+
+====================
+
+Move a card from freecell 2 to the foundations
+
+====================
+
+This game is solveable.
+Total number of states checked is 137.
+This scan generated 191 states.

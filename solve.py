@@ -5,6 +5,24 @@ from typing import Optional
 from readProgram import readProgram
 rp = readProgram()
 
+import msvcrt
+
+class TimeoutExpired(Exception):
+    pass
+
+def input_with_timeout(prompt, timeout, timer=time.monotonic):
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    endtime = timer() + timeout
+    result = []
+    while timer() < endtime:
+        if msvcrt.kbhit():
+            result.append(msvcrt.getwche()) #XXX can it block on multibyte characters?
+            if result[-1] == '\r':
+                return ''.join(result[:-1])
+        time.sleep(0.04) # just to yield to other processes/threads
+    raise TimeoutExpired
+
 def convertBoard(board: list[list[int]]) -> list[list[str]]:
     ret = list()
     for row in board:
@@ -142,8 +160,6 @@ def generate_moves(board: list[list[int]], data: str) -> Optional[list[list[tupl
         moves.append((move_src, move_card, move_dst))
         state_to_add = (tuple(tuple(col) for col in curr_board), tuple(curr_cells), tuple(sorted(curr_foundations)))
         states.append(state_to_add)
-    for idx, s in enumerate(states):
-        print(f'{idx}: {s}')
     return [moves, states]
 
 def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int]], list[int], list[int]]]) -> int:
@@ -160,7 +176,6 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
         return -1
     
     src, num, dst = moves[move_index]
-    print(f'src is {src}, num is {num}, dst is {dst}')
     src_type = 'column'
     dst_type = 'column'
     if src[0] == 'F':
@@ -174,32 +189,85 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
     else:
         print(f'Move {num} cards from {src_type} {src[1:]} to {dst_type} {dst[1:]}')
     
+    move_index = -1
     while (sorted(foundations) != [48, 49, 50, 51]):
-        # Get the new game state
+        # Give time for user to force a move
         new_board = rp.get_tableau()
         new_cells = rp.get_freecells()
         new_foundations = sorted(rp.get_foundations())
-        if (new_board == board) and (cells == new_cells) and (foundations == new_foundations):
-            time.sleep(0.25)
-            continue
-        state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
-        print(f'Current game state: {state}')
         try:
-            move_index = states.index(state)
-        except ValueError:
-            # print(f'Could not find the game state. Please restart the game and the solver.')
-            # Try sleeping for 1 second then reading again
-            time.sleep(1)
-            new_board = rp.get_tableau()
-            new_cells = rp.get_freecells()
-            new_foundations = sorted(rp.get_foundations())
+            answer = input_with_timeout('', 0.1)
+        except TimeoutExpired:
+            # new_board = rp.get_tableau()
+            # new_cells = rp.get_freecells()
+            # new_foundations = sorted(rp.get_foundations())
+            if (new_board == board) and (cells == new_cells) and (foundations == new_foundations):
+                time.sleep(0.25)
+                continue
             state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
+            # try:
+            #     move_index = states.index(state)
+            # except ValueError:
             if state not in states:
-                print(f'Could not find the game state. Please restart the game and the solver.')
-                return -1
-            move_index = states.index(state)
+                time.sleep(1)
+                new_board = rp.get_tableau()
+                new_cells = rp.get_freecells()
+                new_foundations = sorted(rp.get_foundations())
+                state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
+                if state not in states:
+                    print(f'Could not find the game state. Playing next move.')
+                    print(state)
+                    move_index += 1
+                    # return -1
+                else:
+                    indices = [i for i, x in enumerate(states) if x == state]
+                    move_index = -1
+                    for i in indices:
+                        if (i > move_index):
+                            move_index = i
+                            break
+                    # move_index = states.index(state)
+                    if move_index == -1:
+                        print('alsdjhfajsdhf')
+            else:
+                indices = [i for i, x in enumerate(states) if x == state]
+                move_index = -1
+                for i in indices:
+                    if (i > move_index):
+                        move_index = i
+                        break
+                # move_index = states.index(state)
+                if move_index == -1:
+                    print('alsdjhfajsdhf')
+        else:
+            move_index += 1
+        # Get the new game state
+        # new_board = rp.get_tableau()
+        # new_cells = rp.get_freecells()
+        # new_foundations = sorted(rp.get_foundations())
+        # if (new_board == board) and (cells == new_cells) and (foundations == new_foundations):
+        #     time.sleep(0.25)
+        #     continue
+        # state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
+        # # try:
+        # #     move_index = states.index(state)
+        # # except ValueError:
+        # if state not in states:
+        #     time.sleep(1)
+        #     new_board = rp.get_tableau()
+        #     new_cells = rp.get_freecells()
+        #     new_foundations = sorted(rp.get_foundations())
+        #     state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
+        #     if state not in states:
+        #         print(f'Could not find the game state. Playing next move.')
+        #         print(state)
+        #         move_index += 1
+        #         # return -1
+        #     else:
+        #         move_index = states.index(state)
+        # else:
+        #     move_index = states.index(state)
         src, num, dst = moves[move_index]
-        print(f'src is {src}, num is {num}, dst is {dst}')
         src_type = 'column'
         dst_type = 'column'
         if src[0] == 'F':

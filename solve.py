@@ -1,5 +1,6 @@
 import sys
 import subprocess
+import time
 from typing import Optional
 from readProgram import readProgram
 rp = readProgram()
@@ -69,7 +70,7 @@ def generate_moves(board: list[list[int]], data: str) -> Optional[list[list[tupl
     # Loop through lines of data
     for line in filter(lambda l: 'Move' in l, data.split('\n')):
         move_src = ''
-        move_card = 0
+        move_card = 1
         move_dst = ''
         words = line.split()
         if words[1] != 'a': # Moving within columns
@@ -115,7 +116,7 @@ def generate_moves(board: list[list[int]], data: str) -> Optional[list[list[tupl
                 dst_type = words[7]
                 move_src = 'F' + str(src)
                 card = curr_cells[src]
-                curr_cells[src] = -1
+                curr_cells[src] = 255
                 if dst_type == 'stack':
                     dst = int(words[8])
                     curr_board[dst].append(card)
@@ -139,8 +140,10 @@ def generate_moves(board: list[list[int]], data: str) -> Optional[list[list[tupl
                 return None
         # Add the move and state
         moves.append((move_src, move_card, move_dst))
-        state_to_add = (tuple(tuple(col) for col in curr_board), tuple(curr_cells), tuple(curr_foundations))
+        state_to_add = (tuple(tuple(col) for col in curr_board), tuple(curr_cells), tuple(sorted(curr_foundations)))
         states.append(state_to_add)
+    for idx, s in enumerate(states):
+        print(f'{idx}: {s}')
     return [moves, states]
 
 def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int]], list[int], list[int]]]) -> int:
@@ -148,11 +151,72 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
     # Print initial move
     board = rp.get_tableau()
     cells = rp.get_freecells()
-    foundations = rp.get_foundations()
-    print(cells)
-    print(foundations)
+    foundations = sorted(rp.get_foundations())
+    initial_state = (tuple(tuple(col) for col in board), tuple(cells), tuple(foundations))
+    try:
+        move_index = states.index(initial_state)
+    except ValueError:
+        print(f'Could not find the game state. Please restart the game and the solver.')
+        return -1
+    
+    src, num, dst = moves[move_index]
+    print(f'src is {src}, num is {num}, dst is {dst}')
+    src_type = 'column'
+    dst_type = 'column'
+    if src[0] == 'F':
+        src_type = 'freecell'
+    if dst[0] == 'F':
+        dst_type = 'freecell'
+    elif dst[0] == 'P':
+        dst_type = 'foundations'
+    if dst_type == 'foundations':
+        print(f'Move {num} cards from {src_type} {src[1:]} to the foundations')
+    else:
+        print(f'Move {num} cards from {src_type} {src[1:]} to {dst_type} {dst[1:]}')
+    
+    while (sorted(foundations) != [48, 49, 50, 51]):
+        # Get the new game state
+        new_board = rp.get_tableau()
+        new_cells = rp.get_freecells()
+        new_foundations = sorted(rp.get_foundations())
+        if (new_board == board) and (cells == new_cells) and (foundations == new_foundations):
+            time.sleep(0.25)
+            continue
+        state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
+        print(f'Current game state: {state}')
+        try:
+            move_index = states.index(state)
+        except ValueError:
+            # print(f'Could not find the game state. Please restart the game and the solver.')
+            # Try sleeping for 1 second then reading again
+            time.sleep(1)
+            new_board = rp.get_tableau()
+            new_cells = rp.get_freecells()
+            new_foundations = sorted(rp.get_foundations())
+            state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
+            if state not in states:
+                print(f'Could not find the game state. Please restart the game and the solver.')
+                return -1
+            move_index = states.index(state)
+        src, num, dst = moves[move_index]
+        print(f'src is {src}, num is {num}, dst is {dst}')
+        src_type = 'column'
+        dst_type = 'column'
+        if src[0] == 'F':
+            src_type = 'freecell'
+        if dst[0] == 'F':
+            dst_type = 'freecell'
+        elif dst[0] == 'P':
+            dst_type = 'foundations'
+        if dst_type == 'foundations':
+            print(f'Move {num} cards from {src_type} {src[1:]} to the foundations')
+        else:
+            print(f'Move {num} cards from {src_type} {src[1:]} to {dst_type} {dst[1:]}')
+        board = [col.copy() for col in new_board.copy()]
+        cells = new_cells.copy()
+        foundations = new_foundations.copy()
 
-    return -1
+    return 0
 
 def main():
     board = rp.get_tableau() # returns list[list[int]]

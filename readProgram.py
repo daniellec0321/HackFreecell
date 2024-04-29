@@ -27,13 +27,14 @@ class readProgram:
         result = HFLIB.get_freecells(temp)
         if (result == -1):
             return None
-        board = list()
-        for i in range(4):
-            pos = hex(temp[i])[2:]
-            if len(pos) < 2:
-                pos = '0' + pos
-            pos = pos.upper()
-            board.append(pos)
+        board = [char for char in temp]
+        # board = list()
+        # for i in range(4):
+        #     pos = hex(temp[i])[2:]
+        #     if len(pos) < 2:
+        #         pos = '0' + pos
+        #     pos = pos.upper()
+        #     board.append(pos)
         return board
 
     def get_foundations(self) -> Optional[list[list[str]]]:
@@ -42,18 +43,18 @@ class readProgram:
         result = HFLIB.get_foundations(temp)
         if (result == -1):
             return None
-        board = list()
-        for i in range(4):
-            to_add = list()
-            if temp[i] != 255:
-                start = temp[i] % 4
-                for j in range(start, temp[i]+1, 4):
-                    pos = hex(j)[2:]
-                    if len(pos) < 2:
-                        pos = '0' + pos
-                    pos = pos.upper()
-                    to_add.append(pos)
-            board.append(to_add.copy())
+        board = [char for char in temp]
+        # for i in range(4):
+        #     to_add = list()
+        #     if temp[i] != 255:
+        #         start = temp[i] % 4
+        #         for j in range(start, temp[i]+1, 4):
+        #             pos = hex(j)[2:]
+        #             if len(pos) < 2:
+        #                 pos = '0' + pos
+        #             pos = pos.upper()
+        #             to_add.append(pos)
+        #     board.append(to_add.copy())
         return board
 
     def get_tableau(self) -> Optional[list[str]]:

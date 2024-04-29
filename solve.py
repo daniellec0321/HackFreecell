@@ -1,5 +1,6 @@
 import sys
 import subprocess
+from typing import Optional
 from readProgram import readProgram
 
 def convertBoard(board: list[list[int]]) -> list[list[str]]:
@@ -50,15 +51,23 @@ def create_solver(board: list[list[str]]) -> str:
     subprocess.run(["rm", "moves.txt"])
     return data
 
-def generate_moves(data: str):
+def generate_moves(data: str) -> Optional[list[str]]:
     'Dont know what it should return yet'
-    pass
+    if 'I could not solve this game' in data:
+        return None
+    return ['erm']
 
 def main():
     rp = readProgram()
     board = rp.get_tableau()
+    print(board)
     new = convertBoard(board)
     data = create_solver(new)
+    moves = generate_moves(data)
+    if not moves:
+        print('Game is unsolveable.')
+        return 1
+    return 0
 
 if __name__ == '__main__':
     sys.exit(main())

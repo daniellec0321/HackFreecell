@@ -195,6 +195,8 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
         new_board = rp.get_tableau()
         new_cells = rp.get_freecells()
         new_foundations = sorted(rp.get_foundations())
+        if new_foundations == [48, 49, 50, 51]:
+            return 0
         try:
             answer = input_with_timeout('', 0.1)
         except TimeoutExpired:
@@ -213,10 +215,11 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
                 new_board = rp.get_tableau()
                 new_cells = rp.get_freecells()
                 new_foundations = sorted(rp.get_foundations())
+                if new_foundations == [48, 49, 50, 51]:
+                    return 0
                 state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
                 if state not in states:
                     print(f'Could not find the game state. Playing next move.')
-                    print(state)
                     move_index += 1
                     # return -1
                 else:
@@ -226,9 +229,9 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
                         if (i > move_index):
                             move_index = i
                             break
-                    # move_index = states.index(state)
                     if move_index == -1:
-                        print('alsdjhfajsdhf')
+                        print('Error reading game state')
+                        return -1
             else:
                 indices = [i for i, x in enumerate(states) if x == state]
                 move_index = -1
@@ -236,37 +239,11 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
                     if (i > move_index):
                         move_index = i
                         break
-                # move_index = states.index(state)
                 if move_index == -1:
-                    print('alsdjhfajsdhf')
+                    print('Error reading game state')
+                    return -1
         else:
             move_index += 1
-        # Get the new game state
-        # new_board = rp.get_tableau()
-        # new_cells = rp.get_freecells()
-        # new_foundations = sorted(rp.get_foundations())
-        # if (new_board == board) and (cells == new_cells) and (foundations == new_foundations):
-        #     time.sleep(0.25)
-        #     continue
-        # state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
-        # # try:
-        # #     move_index = states.index(state)
-        # # except ValueError:
-        # if state not in states:
-        #     time.sleep(1)
-        #     new_board = rp.get_tableau()
-        #     new_cells = rp.get_freecells()
-        #     new_foundations = sorted(rp.get_foundations())
-        #     state = (tuple(tuple(col) for col in new_board), tuple(new_cells), tuple(new_foundations))
-        #     if state not in states:
-        #         print(f'Could not find the game state. Playing next move.')
-        #         print(state)
-        #         move_index += 1
-        #         # return -1
-        #     else:
-        #         move_index = states.index(state)
-        # else:
-        #     move_index = states.index(state)
         src, num, dst = moves[move_index]
         src_type = 'column'
         dst_type = 'column'
@@ -277,9 +254,9 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
         elif dst[0] == 'P':
             dst_type = 'foundations'
         if dst_type == 'foundations':
-            print(f'Move {num} cards from {src_type} {src[1:]} to the foundations')
+            print(f'{move_index}: Move {num} cards from {src_type} {src[1:]} to the foundations')
         else:
-            print(f'Move {num} cards from {src_type} {src[1:]} to {dst_type} {dst[1:]}')
+            print(f'{move_index}: Move {num} cards from {src_type} {src[1:]} to {dst_type} {dst[1:]}')
         board = [col.copy() for col in new_board.copy()]
         cells = new_cells.copy()
         foundations = new_foundations.copy()
@@ -287,6 +264,7 @@ def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int
     return 0
 
 def main():
+    print('Moves are printed automatically based on your current game board. To forcibly go to the next move, hit Enter.')
     board = rp.get_tableau() # returns list[list[int]]
     new = convertBoard(board) # new is [list[list[str]]]
     data = create_solver(new)
@@ -297,8 +275,10 @@ def main():
     moves, states = ret
     
     status = gameLoop(moves, states)
-
-    return 0
+    if status == 0:
+        print('You Win!')
+        return 0
+    return 1
 
 if __name__ == '__main__':
     sys.exit(main())

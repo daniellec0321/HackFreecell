@@ -2,6 +2,7 @@ import sys
 import subprocess
 from typing import Optional
 from readProgram import readProgram
+rp = readProgram()
 
 def convertBoard(board: list[list[int]]) -> list[list[str]]:
     ret = list()
@@ -57,18 +58,16 @@ def generate_moves(board: list[list[int]], data: str) -> Optional[list[list[tupl
         return None
     moves = list()
     states = list()
-    initial_freecells = [-1, -1, -1, -1]
-    initial_foundations = [-1, -1, -1, -1]
+    initial_freecells = [255, 255, 255, 255]
+    initial_foundations = [255, 255, 255, 255]
     initial_state = (tuple(tuple(col) for col in board), tuple(initial_freecells), tuple(initial_foundations))
     states.append(initial_state)
 
     curr_board = [col.copy() for col in board.copy()]
-    print(curr_board)
     curr_cells = initial_freecells.copy()
     curr_foundations = initial_foundations.copy()
     # Loop through lines of data
     for line in filter(lambda l: 'Move' in l, data.split('\n')):
-        print(line)
         move_src = ''
         move_card = 0
         move_dst = ''
@@ -98,15 +97,18 @@ def generate_moves(board: list[list[int]], data: str) -> Optional[list[list[tupl
                     move_dst = 'F' + str(dst)
                 elif dst_type == 'the': # foundations
                     # Find the correct stack
-                    dst = 0
+                    dst = -1
                     for i in range(4):
-                        if (curr_foundations[i] != -1) and (int(curr_foundations[i]/4) == (int(card/4)+1)):
+                        cf = curr_foundations[i]
+                        if (cf != 255) and ((cf%4) == (card%4)):
                             dst = i
                             break
+                    if dst == -1:
+                        dst = curr_foundations.index(255)
                     curr_foundations[dst] = card
                     move_dst = 'P' + str(dst)
                 else:
-                    print('what2')
+                    print('Issue reading data.')
                     return None
             elif src_type == 'freecell':
                 src = int(words[5])
@@ -119,29 +121,40 @@ def generate_moves(board: list[list[int]], data: str) -> Optional[list[list[tupl
                     curr_board[dst].append(card)
                     move_dst = 'C' + str(dst)
                 elif dst_type == 'the':
-                    dst = 0
+                    dst = -1
                     for i in range(4):
-                        if (curr_foundations[i] != -1) and (int(curr_foundations[i]/4) == (int(card/4)+1)):
+                        cf = curr_foundations[i]
+                        if (cf != 255) and ((cf%4) == (card%4)):
                             dst = i
                             break
+                    if dst == -1:
+                        dst = curr_foundations.index(255)
                     curr_foundations[dst] = card
                     move_dst = 'P' + str(dst)
                 else:
-                    print('what3')
-                    return 1
+                    print('Issue reading data.')
+                    return None
             else:
-                print('what')
+                print('Issue reading data.')
                 return None
         # Add the move and state
         moves.append((move_src, move_card, move_dst))
-        print(f'the move is {(move_src, move_card, move_dst)}')
-        stop = input('...')
         state_to_add = (tuple(tuple(col) for col in curr_board), tuple(curr_cells), tuple(curr_foundations))
         states.append(state_to_add)
     return [moves, states]
 
+def gameLoop(moves: list[tuple[str, int, str]], states: list[tuple[list[list[int]], list[int], list[int]]]) -> int:
+
+    # Print initial move
+    board = rp.get_tableau()
+    cells = rp.get_freecells()
+    foundations = rp.get_foundations()
+    print(cells)
+    print(foundations)
+
+    return -1
+
 def main():
-    rp = readProgram()
     board = rp.get_tableau() # returns list[list[int]]
     new = convertBoard(board) # new is [list[list[str]]]
     data = create_solver(new)
@@ -150,6 +163,9 @@ def main():
         print('Game is unsolveable.')
         return 1
     moves, states = ret
+    
+    status = gameLoop(moves, states)
+
     return 0
 
 if __name__ == '__main__':

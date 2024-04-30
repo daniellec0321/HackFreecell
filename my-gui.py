@@ -3,9 +3,7 @@ import subprocess
 from typing import Optional
 import tkinter as tk
 from readProgram import readProgram
-# from solve import Solve
 rp = readProgram()
-# erm = Solve()
 
 class Solver:
 
@@ -31,7 +29,7 @@ class Solver:
             self.lastMove -= 1
 
     def convertBoard(self, board: list[list[int]]) -> list[list[str]]:
-        'New function, check this'
+        'Convert board to something the executable can read'
         ret = list()
         for row in board:
             to_add = list()
@@ -252,11 +250,8 @@ class Solver:
         if cells != [255, 255, 255, 255] or foundations != [255, 255, 255, 255]:
             print('Freecells and/or foundations are corrupted. Make sure you have a new game ready and set.')
             return -1
-        # new = erm.convertBoard(board) # new is [list[list[str]]]
         new = self.convertBoard(board)
-        # data = erm.create_solver(new)
         data = self.create_solver(new)
-        # ret = erm.generate_moves(board, data)
         ret = self.generate_moves(board, data)
         if not ret:
             print('Game is unsolveable.')

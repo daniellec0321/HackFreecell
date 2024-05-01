@@ -67,7 +67,7 @@ class Solver:
             f.write('\n')
         f.close()
         f = open("moves.txt", "w")
-        subprocess.run(["./fc-solve.exe", "-m", "temp.txt"], stdout=f)
+        subprocess.run(["./lib/fc-solve.exe", "-m", "temp.txt"], stdout=f)
         f.close()
         subprocess.run(["rm", "temp.txt"])
         # Read the moves into memory
@@ -229,9 +229,11 @@ class Solver:
                 dst_type = 'the'
                 dst = 'foundations'
             if num_cards == 1:
-                text = f'{self.mode} mode\nStep {self.lastMove+1} out of {self.totalMoves}: Move {num_cards} card from {src_type} {src} to {dst_type} {dst}'
+                # text = f'{self.mode} mode\nStep {self.lastMove+1} out of {self.totalMoves}: Move {num_cards} card from {src_type} {src} to {dst_type} {dst}'
+                text = f'{self.mode} mode\nStep {self.lastMove+1}: Move {num_cards} card from {src_type} {src} to {dst_type} {dst}'
             else:
-                text = f'{self.mode} mode\nStep {self.lastMove+1} out of {self.totalMoves}: Move {num_cards} cards from {src_type} {src} to {dst_type} {dst}'
+                # text = f'{self.mode} mode\nStep {self.lastMove+1} out of {self.totalMoves}: Move {num_cards} cards from {src_type} {src} to {dst_type} {dst}'
+                text = f'{self.mode} mode\nStep {self.lastMove+1}: Move {num_cards} cards from {src_type} {src} to {dst_type} {dst}'
             self.move_text['text'] = text
         self.root.after(100, self.get_move) # run itself again after 1000 ms
         return 0

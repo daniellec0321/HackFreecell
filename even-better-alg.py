@@ -27,28 +27,32 @@ class Move:
         # Column to column
         can_move = self.max_cards_to_move(board, cells)
         for idx, col in enumerate(board):
-            print(f'Analyzing col {idx}...')
+            # print(f'Analyzing col {idx}...')
             for i in range(len(col)-1, -1, -1):
                 if len(col[i:]) > can_move:
                     break
                 if not self.cards_in_order(col[i:]):
                     break
-                print(f'Checking this subcolumn: {col[i:]}')
+                # print(f'Checking this subcolumn: {col[i:]}')
                 for j, c in enumerate(board):
                     if j == idx:
                         continue
                     if not c and len(col[i:]) != can_move: # Empty column
-                        moves.append(("C"+str(j), len(col[i:]), "C"+str(idx)))
+                        # print(f'Found empty column, appending {("C"+str(idx), len(col[i:]), "C"+str(j))}')
+                        moves.append(("C"+str(idx), len(col[i:]), "C"+str(j)))
+                        continue
+                    if not c and len(col[i:]) == can_move:
+                        # print(f'Empty column, but not enough space to move card.')
                         continue
                     # Check if src card can go on this dst
                     if int(col[i]/4) != int(c[-1]/4)-1:
-                        print(f'col[i] is {hex(col[i])}, c[-1] is {hex(c[-1])}. Wrong number')
+                        # print(f'col[i] is {hex(col[i])}, c[-1] is {hex(c[-1])}. Wrong number')
                         continue
                     if self.get_color(col[i]) == self.get_color(c[-1]):
-                        print(f'col[i] is {hex(col[i])}, c[-1] is {hex(c[-1])}. Wrong color')
+                        # print(f'col[i] is {hex(col[i])}, c[-1] is {hex(c[-1])}. Wrong color')
                         continue
-                    print(f'col[i] is {hex(col[i])}, c[-1] is {hex(c[-1])}. We\'re good!')
-                    moves.append(("C"+str(j), len(col[i:]), "C"+str(idx)))
+                    # print(f'col[i] is {hex(col[i])}, c[-1] is {hex(c[-1])}. We\'re good! Appending move {("C"+str(idx), len(col[i:]), "C"+str(j))}')
+                    moves.append(("C"+str(idx), len(col[i:]), "C"+str(j)))
         # Column to freecell
         # Column to foundations
         # Freecell to column

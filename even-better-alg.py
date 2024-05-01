@@ -54,6 +54,15 @@ class Move:
                     # print(f'col[i] is {hex(col[i])}, c[-1] is {hex(c[-1])}. We\'re good! Appending move {("C"+str(idx), len(col[i:]), "C"+str(j))}')
                     moves.append(("C"+str(idx), len(col[i:]), "C"+str(j)))
         # Column to freecell
+        freecell = -1
+        for i in range(4):
+            if cells[i] == 255:
+                freecell = i
+                break
+        if freecell != -1:
+            for idx, col in enumerate(board):
+                if col:
+                    moves.append(("C"+str(idx), 1, "F"+str(freecell)))
         # Column to foundations
         # Freecell to column
         # Freecell to foundations

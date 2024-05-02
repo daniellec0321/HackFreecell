@@ -23,6 +23,12 @@ class Move:
             if self.get_color(col[i]) == self.get_color(col[i+1]):
                 return False
         return True
+    
+    def get_score(cells: list[int], foundations: list[int]) -> int:
+        score = 0
+        score += sum(list(filter(lambda l: l != 255, foundations)))
+        score -= len(list(filter(lambda l: l != 255, cells))) * 2
+        return score
 
     def generate_moves(self, board: list[list[int]], cells: list[int], foundations: list[int]) -> Optional[list[tuple[str, int, str]]]:
         moves = list()
@@ -83,11 +89,54 @@ class Move:
                 dest = foundations.index(card_to_find)
                 moves.append(("F"+str(idx), 1, "P"+str(dest)))
         return moves
+    
+    def make_move(self, board: list[list[int]], cells: list[int], foundations: list[int], move: tuple[str, int, str]) -> list[list[list[int]], list[int], list[int]]:
+        # Column to column
+        new_board = [col.copy() for col in board]
+        new_cells = cells.copy()
+        new_foundations = foundations.copy()
+        if move[0][0] == 'C' and move[2][0] == 'C':
+            to_move = board[int(move[0][1])][-1*move[1]:]
+            for card in to_move:
+                new_board[int(move[2][1])].append(card)
+            for _ in range(len(to_move)):
+                new_board[int(move[0][1])].pop()
+        # Column to cells
+        elif move[0][0] == 'C' and move[2][0] == 'F':
+            card = new_board[int(move[0][1])].pop()
+            new_cells[int(move[2][1])] = card
+        # Column to foundations
+        elif move[0][0] == 'C' and move[2][0] == 'P':
+            card = new_board[int(move[0][1])].pop()
+            new_foundations[int(move[2][1])] = card
+        # Cells to columns
+        elif move[0][0] == 'F' and move[2][0] == 'C':
+            card = new_cells[int(move[0][1])]
+            new_cells[int(move[0][1])] = 255
+            new_board[int(move[2][1])].append(card)
+        # Cells to foundations
+        else:
+            card = new_cells[int(move[0][1])]
+            new_cells[int(move[0][1])] = 255
+            new_foundations[int(move[2][1])] = card
+        return [new_board, new_cells, new_foundations]
 
-    def get_move(self, board: list[list[int]], cells: list[int], foundations: list[int]):
+    def recurser(self, board: list[list[int]], cells: list[int], foundations: list[int], depth: int) -> int:
+        if depth >= 6:
+            return -1
+        curr_score = self.get_score(cells, foundations)
+        moves = self.generate_moves(board, cells, foundations)
+        if not moves:
+            return -1
+        for move in moves:
+            # Make the move and recurse
+            pass
         pass
 
-def main(args: list[str]) -> int:
+    def get_move(board: list[list[int]], cells: list[int], foundations: list[int]) -> Optional[tuple[str, int, str]]:
+        pass
+
+def main() -> int:
     rp = readProgram()
     m = Move()
     board = rp.get_tableau()
@@ -96,8 +145,25 @@ def main(args: list[str]) -> int:
     if not board or not cells or not foundations:
         print(f'Error getting game data')
         return 1
-    moves = m.generate_moves(board, cells, foundations)
+    board = [
+        [51, 50, 49, 48, 47, 46, 45],
+        [44, 43, 42, 41, 40, 39, 38],
+        [37, 36, 35, 34, 33, 32, 31],
+        [30, 29, 28, 27, 26, 25, 24],
+        [23, 22, 21, 20, 19, 18],
+        [17, 16, 15, 14, 13, 12],
+        [11, 10, 9, 8, 7, 6],
+        [5, 3, 2, 1, 4, 0]
+    ]
+    foundations = [255, 255, 255, 255]
+    cells = [255, 255, 255, 255]
+    new_board, new_cells, new_foundations = m.make_move(board, cells, foundations, ("C7", 1, "P0"))
+    new_board, new_cells, new_foundations = m.make_move(new_board, new_cells, new_foundations, ("C7", 1, "P0"))
+    for row in new_board:
+        print(row)
+    print(new_cells)
+    print(new_foundations)
     return 0
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    sys.exit(main())

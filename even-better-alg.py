@@ -6,6 +6,9 @@ rec = 0
 
 class Move:
 
+    def __init__(self):
+        self.cards_visited = set()
+
     def max_cards_to_move(self, board: list[list[int]], cells: list[int]) -> int:
         can_move = 1
         can_move += len(list(filter(lambda l: l == 255, cells)))
@@ -29,6 +32,7 @@ class Move:
     def get_score(self, cells: list[int], foundations: list[int]) -> int:
         score = 0
         score += sum(list(filter(lambda l: l != 255, foundations)))
+        score += len(self.cards_visited)
         score -= len(list(filter(lambda l: l != 255, cells))) * 2
         return score
     
@@ -155,7 +159,20 @@ class Move:
             return -1
         for move in moves:
             new_board, new_cells, new_foundations = self.make_move(board, cells, foundations, move)
+            # Add to cards visited
+            cards_moved = list()
+            if move[0][0] == 'C':
+                to_add = board[int(move[0][1])][-1*move[1]:]
+                for card in to_add:
+                    cards_moved.append(card)
+            else:
+                cards_moved.append(cells[int(move[0][1])])
+            for card in cards_moved:
+                self.cards_visited.add(card)
             score = self.recurser(new_board, new_cells, new_foundations, visited, depth+1)
+            # Discard
+            for card in cards_moved:
+                self.cards_visited.discard(card)
             best_score = max(best_score, score)
         return best_score
 
@@ -182,6 +199,7 @@ class Move:
         rp = readProgram()
         visited = set()
         while True:
+            print(f'Cards visited: {self.cards_visited}')
             board = rp.get_tableau()
             cells = rp.get_freecells()
             foundations = rp.get_foundations()
@@ -194,6 +212,16 @@ class Move:
             # print(foundations)
             visited.add(state)
             move = self.get_move(board, cells, foundations, visited)
+            # Assume we're doing this move, so add to visited
+            cards_moved = list()
+            if move[0][0] == 'C':
+                to_add = board[int(move[0][1])][-1*move[1]:]
+                for card in to_add:
+                    cards_moved.append(card)
+            else:
+                cards_moved.append(cells[int(move[0][1])])
+            for card in cards_moved:
+                self.cards_visited.add(card)
             if not move:
                 print('Cannot make a move!!!')
             else:

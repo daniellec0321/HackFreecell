@@ -122,16 +122,19 @@ class Move:
         return [new_board, new_cells, new_foundations]
 
     def recurser(self, board: list[list[int]], cells: list[int], foundations: list[int], depth: int) -> int:
+        if sorted(foundations) == [48, 49, 50, 51]:
+            return sys.maxsize
         if depth >= 6:
             return -1
-        curr_score = self.get_score(cells, foundations)
+        best_score = self.get_score(cells, foundations)
         moves = self.generate_moves(board, cells, foundations)
         if not moves:
             return -1
         for move in moves:
-            # Make the move and recurse
-            pass
-        pass
+            new_board, new_cells, new_foundations = self.make_move(board, cells, foundations, move)
+            score = self.recurser(new_board, new_cells, new_foundations, depth+1)
+            best_score = max(best_score, score)
+        return best_score
 
     def get_move(board: list[list[int]], cells: list[int], foundations: list[int]) -> Optional[tuple[str, int, str]]:
         pass
@@ -145,24 +148,6 @@ def main() -> int:
     if not board or not cells or not foundations:
         print(f'Error getting game data')
         return 1
-    board = [
-        [51, 50, 49, 48, 47, 46, 45],
-        [44, 43, 42, 41, 40, 39, 38],
-        [37, 36, 35, 34, 33, 32, 31],
-        [30, 29, 28, 27, 26, 25, 24],
-        [23, 22, 21, 20, 19, 18],
-        [17, 16, 15, 14, 13, 12],
-        [11, 10, 9, 8, 7, 6],
-        [5, 3, 2, 1, 4, 0]
-    ]
-    foundations = [255, 255, 255, 255]
-    cells = [255, 255, 255, 255]
-    new_board, new_cells, new_foundations = m.make_move(board, cells, foundations, ("C7", 1, "P0"))
-    new_board, new_cells, new_foundations = m.make_move(new_board, new_cells, new_foundations, ("C7", 1, "P0"))
-    for row in new_board:
-        print(row)
-    print(new_cells)
-    print(new_foundations)
     return 0
 
 if __name__ == '__main__':

@@ -1,13 +1,11 @@
 import sys
+import time
 from typing import Optional
 from readProgram import readProgram
 
 rec = 0
 
 class Move:
-
-    def __init__(self):
-        self.cards_visited = set()
 
     def max_cards_to_move(self, board: list[list[int]], cells: list[int]) -> int:
         can_move = 1
@@ -29,10 +27,24 @@ class Move:
                 return False
         return True
     
-    def get_score(self, cells: list[int], foundations: list[int]) -> int:
+    def get_score(self, board: list[list[int]], cells: list[int], foundations: list[int], visited_cards: set[int]) -> int:
         score = 0
-        score += sum(list(filter(lambda l: l != 255, foundations)))
-        score += len(self.cards_visited)
+        # score += (sum(list(filter(lambda l: l != 255, foundations))) * 10)
+        for card in filter(lambda l: l!=255, foundations):
+            for i in range(card, -1, -4):
+                score += 4
+        # print(f'after foundations {score}')
+        for col in filter(lambda l: l, board):
+            if col[-1] not in visited_cards:
+                score += 1
+        for card in filter(lambda l: l!=255, cells):
+            if card not in visited_cards:
+                score += 1
+        for card in filter(lambda l: l!=255, foundations):
+            for i in range(card, -1, -4):
+                if i not in visited_cards:
+                    score += 1
+        # print(f'after visited cards {score}')
         score -= len(list(filter(lambda l: l != 255, cells))) * 2
         return score
     
@@ -138,7 +150,7 @@ class Move:
             new_foundations[int(move[2][1])] = card
         return [new_board, new_cells, new_foundations]
 
-    def recurser(self, board: list[list[int]], cells: list[int], foundations: list[int], visited: set[tuple[tuple[tuple[int]], tuple[int], tuple[int]]], depth: int) -> int:
+    def recurser(self, board: list[list[int]], cells: list[int], foundations: list[int], visited: set[tuple[tuple[tuple[int]], tuple[int], tuple[int]]], cards_visited: set[int], depth: int) -> int:
         # global rec
         # rec += 1
         # print(f'Rec is {rec}')
@@ -153,31 +165,23 @@ class Move:
         if depth >= 5:
             return -1
         visited.add(state)
-        best_score = self.get_score(cells, foundations)
+        # best_score = self.get_score(cells, foundations)
+        best_score = self.get_score(board, cells, foundations, cards_visited)
         moves = self.generate_moves(board, cells, foundations)
+        # if depth == 0:
+        #     print(moves)
         if not moves:
             return -1
         for move in moves:
             new_board, new_cells, new_foundations = self.make_move(board, cells, foundations, move)
-            # Add to cards visited
-            cards_moved = list()
-            if move[0][0] == 'C':
-                to_add = board[int(move[0][1])][-1*move[1]:]
-                for card in to_add:
-                    cards_moved.append(card)
-            else:
-                cards_moved.append(cells[int(move[0][1])])
-            for card in cards_moved:
-                self.cards_visited.add(card)
-            score = self.recurser(new_board, new_cells, new_foundations, visited, depth+1)
-            # Discard
-            for card in cards_moved:
-                self.cards_visited.discard(card)
+            score = self.recurser(new_board, new_cells, new_foundations, visited, cards_visited, depth+1)
             best_score = max(best_score, score)
         return best_score
 
-    def get_move(self, board: list[list[int]], cells: list[int], foundations: list[int], master_visited: set[tuple[tuple[tuple[int]], tuple[int], tuple[int]]]) -> Optional[tuple[str, int, str]]:
+    def get_move(self, board: list[list[int]], cells: list[int], foundations: list[int], master_visited: set[tuple[tuple[tuple[int]], tuple[int], tuple[int]]], cards_visited: set[int]) -> Optional[tuple[str, int, str]]:
         moves = self.generate_moves(board, cells, foundations)
+        if ("F3", 1, "P0") in moves:
+            print('yay!!!!!!')
         if not moves:
             return None
         best_score = -1
@@ -189,44 +193,84 @@ class Move:
             state = self.make_game_state(new_board, new_cells, new_foundations)
             if state in master_visited:
                 continue
-            score = self.recurser(new_board, new_cells, new_foundations, visited, 0)
+            score = self.recurser(new_board, new_cells, new_foundations, visited, cards_visited, 0)
+            if move == ("F3", 1, "P0"):
+                print(f'returned score was {score}')
             if score > best_score:
                 best_score = score
                 best_move = move
         return best_move
 
     def game_loop(self):
+        # rp = readProgram()
+        # visited = set()
+        # cards_visited = set()
+        # while True:
+        #     board = rp.get_tableau()
+        #     cells = rp.get_freecells()
+        #     foundations = rp.get_foundations()
+        #     if not board or not cells or not foundations:
+        #         print(f'Error getting game data')
+        #         return
+        #     # Add some cards to cardsvisited
+        #     for col in filter(lambda l: l, board):
+        #         cards_visited.add(col[-1])
+        #     for card in filter(lambda l: l!=255, cells):
+        #         cards_visited.add(card)
+        #     for card in filter(lambda l: l!=255, foundations):
+        #         for i in range(card, -1, -4):
+        #             cards_visited.add(i)
+        #     # Make game state
+        #     state = self.make_game_state(board, cells, foundations)
+        #     visited.add(state)
+        #     move = self.get_move(board, cells, foundations, visited, cards_visited)
+        #     if not move:
+        #         print('Cannot make a move!!!')
+        #     else:
+        #         print(move)
+        #     stop = input('stopping...')
         rp = readProgram()
         visited = set()
+        cards_visited = set()
+        board = rp.get_tableau()
+        cells = rp.get_freecells()
+        foundations = rp.get_foundations()
+        if not board or not cells or not foundations:
+            print(f'Error getting game data')
+            return
         while True:
-            print(f'Cards visited: {self.cards_visited}')
-            board = rp.get_tableau()
-            cells = rp.get_freecells()
-            foundations = rp.get_foundations()
-            if not board or not cells or not foundations:
-                print(f'Error getting game data')
-                return
+            # Get move
+            for col in filter(lambda l: l, board):
+                cards_visited.add(col[-1])
+            for card in filter(lambda l: l!=255, cells):
+                cards_visited.add(card)
+            for card in filter(lambda l: l!=255, foundations):
+                for i in range(card, -1, -4):
+                    cards_visited.add(i)
+            # Make game state
             state = self.make_game_state(board, cells, foundations)
-            # print(board)
-            # print(cells)
-            # print(foundations)
             visited.add(state)
-            move = self.get_move(board, cells, foundations, visited)
-            # Assume we're doing this move, so add to visited
-            cards_moved = list()
-            if move[0][0] == 'C':
-                to_add = board[int(move[0][1])][-1*move[1]:]
-                for card in to_add:
-                    cards_moved.append(card)
-            else:
-                cards_moved.append(cells[int(move[0][1])])
-            for card in cards_moved:
-                self.cards_visited.add(card)
+            move = self.get_move(board, cells, foundations, visited, cards_visited)
             if not move:
                 print('Cannot make a move!!!')
             else:
                 print(move)
-            stop = input('stopping...')
+            new_board = rp.get_tableau()
+            new_cells = rp.get_freecells()
+            new_foundations = rp.get_foundations()
+            # print(board)
+            # print(new_board)
+            # print(board == new_board)
+            # print(cells == new_cells)
+            # print(foundations == new_foundations)
+            while (new_board == board) and (new_cells == cells) and (new_foundations == foundations):
+                time.sleep(0.5)
+                new_board = rp.get_tableau()
+                new_cells = rp.get_freecells()
+                new_foundations = rp.get_foundations()
+            board = [col.copy() for col in new_board.copy()]
+            cells = new_cells.copy()
+            foundations = new_foundations.copy()
 
 def main() -> int:
     # rp = readProgram()

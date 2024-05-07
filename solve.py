@@ -175,6 +175,8 @@ class Move:
         best_score = -1
         best_moves = list()
         visited = set()
+        orig_state = self.make_game_state(board, cells, foundations)
+        visited.add(orig_state)
         for move in moves:
             new_board, new_cells, new_foundations = self.make_move(board, cells, foundations, move)
             # Send this to recurser (if needed)
@@ -186,74 +188,6 @@ class Move:
             if score > best_score:
                 best_score = score
                 best_moves = ret_moves.copy()
+            visited = set()
+            visited.add(orig_state)
         return best_moves
-
-    def game_loop(self):
-        rp = readProgram()
-        visited = set()
-        cards_visited = set()
-        board = rp.get_tableau()
-        cells = rp.get_freecells()
-        foundations = rp.get_foundations()
-        if not board or not cells or not foundations:
-            print(f'Error getting game data')
-            return
-        while True:
-            # Get move
-            for col in filter(lambda l: l, board):
-                cards_visited.add(col[-1])
-            for card in filter(lambda l: l!=255, cells):
-                cards_visited.add(card)
-            for card in filter(lambda l: l!=255, foundations):
-                for i in range(card, -1, -4):
-                    cards_visited.add(i)
-            # Make game state
-            state = self.make_game_state(board, cells, foundations)
-            visited.add(state)
-            move = self.get_move(board, cells, foundations, visited, cards_visited)
-            if not move:
-                print('Cannot make a move!!!')
-            else:
-                print(move)
-            new_board = rp.get_tableau()
-            new_cells = rp.get_freecells()
-            new_foundations = rp.get_foundations()
-            while (new_board == board) and (new_cells == cells) and (new_foundations == foundations):
-                time.sleep(0.5)
-                new_board = rp.get_tableau()
-                new_cells = rp.get_freecells()
-                new_foundations = rp.get_foundations()
-            board = [col.copy() for col in new_board.copy()]
-            cells = new_cells.copy()
-            foundations = new_foundations.copy()
-    
-    def manual(self) -> int:
-        rp = readProgram()
-        visited = set()
-        while True:
-            stop = input('Press enter to get next move.')
-            board = rp.get_tableau()
-            cells = rp.get_freecells()
-            foundations = rp.get_foundations()
-            if not board or not cells or not foundations:
-                print(f'Error getting game data')
-                return
-            state = self.make_game_state(board, cells, foundations)
-            visited.add(state)
-            move = self.get_move(board, cells, foundations, visited)
-            if not move:
-                print(f'No more moves!')
-                return 1
-            for m in move:
-                print(m)
-        return 0
-
-
-def main() -> int:
-    m = Move()
-    # m.game_loop()
-    m.manual()
-    return 0
-
-if __name__ == '__main__':
-    sys.exit(main())

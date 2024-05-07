@@ -27,10 +27,10 @@ class Move:
     
     def get_score(self, board: list[list[int]], cells: list[int], foundations: list[int]) -> int:
         score = 0
-        # +10 for every card in foundations
+        # +4 for every card in foundations
         for card in filter(lambda l: l!=255, foundations):
             for i in range(card, -1, -4):
-                score += 10
+                score += 4
         # +1 for every card in column order
         for col in filter(lambda l: l, board):
             for i in range(len(col)-2, -1, -1):

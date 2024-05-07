@@ -1,7 +1,5 @@
 import sys
-import time
 from typing import Optional
-from readProgram import readProgram
 
 class Move:
 
@@ -151,7 +149,8 @@ class Move:
         if sorted(foundations) == [48, 49, 50, 51]:
             return [sys.maxsize, move_list.copy()]
         visited.add(state)
-        if depth >= 5:
+        # if depth >= 5:
+        if depth >= 4:
             return [best_score, move_list.copy()]
         moves = self.generate_moves(board, cells, foundations)
         if not moves:
@@ -161,8 +160,7 @@ class Move:
             new_board, new_cells, new_foundations = self.make_move(board, cells, foundations, move)
             to_send = move_list.copy()
             to_send.append(move)
-            score, curr_moves = self.recurser(new_board, new_cells, new_foundations, visited, to_send, depth+1)
-            # best_score = max(best_score, score)
+            score, curr_moves = self.recurser(new_board, new_cells, new_foundations, visited.copy(), to_send, depth+1)
             if score > best_score:
                 best_score = score
                 ret_moves = curr_moves.copy()
@@ -174,20 +172,18 @@ class Move:
             return None
         best_score = -1
         best_moves = list()
-        visited = set()
+        visited = master_visited.copy()
         orig_state = self.make_game_state(board, cells, foundations)
         visited.add(orig_state)
         for move in moves:
             new_board, new_cells, new_foundations = self.make_move(board, cells, foundations, move)
             # Send this to recurser (if needed)
             state = self.make_game_state(new_board, new_cells, new_foundations)
-            if state in master_visited:
+            if state in visited:
                 continue
             move_list = [move]
-            score, ret_moves = self.recurser(new_board, new_cells, new_foundations, visited, move_list, 0)
+            score, ret_moves = self.recurser(new_board, new_cells, new_foundations, visited.copy(), move_list, 0)
             if score > best_score:
                 best_score = score
                 best_moves = ret_moves.copy()
-            visited = set()
-            visited.add(orig_state)
         return best_moves

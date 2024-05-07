@@ -51,17 +51,17 @@ class GUI:
     def inc_move(self):
         board = rp.get_tableau()
         if not board:
-            self.move_text['text'] = '\n\n\n\n\n\n'
+            self.move_text['text'] = '\n\n\n\n\n'
             self.visited = set()
             return
         cells = rp.get_freecells()
         if not cells:
-            self.move_text['text'] = '\n\n\n\n\n\n'
+            self.move_text['text'] = '\n\n\n\n\n'
             self.visited = set()
             return
         foundations = rp.get_foundations()
         if not foundations:
-            self.move_text['text'] = '\n\n\n\n\n\n'
+            self.move_text['text'] = '\n\n\n\n\n'
             self.visited = set()
             return
         state = self.Move.make_game_state(board, cells, foundations)
@@ -76,7 +76,7 @@ class GUI:
         canvas.create_text(250, 25, text='FreeCell Move Generator', font=('Helvetica', 16, 'bold'))
         self.move_text = tk.Label(self.root, text='', font=('Helvetica', 10))
         self.move_text.grid(column=1, row=2)
-        self.move_text['text'] = '\n\n\n\n\n\n'
+        self.move_text['text'] = '\n\n\n\n\n'
         move_label = tk.StringVar()
         move_btn = tk.Button(self.root, textvariable=move_label, command=lambda: self.inc_move(), height=2, width=15)
         move_label.set("Generate moves...")

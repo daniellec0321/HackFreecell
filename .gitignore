@@ -1,4 +1,3 @@
 *.swp
 *.o
-*.dll
 *__pycache__*
